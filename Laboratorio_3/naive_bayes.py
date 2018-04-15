@@ -2,49 +2,42 @@ import numpy as np
 import math
 class NaiveBayes:
 	def __init__(self, data, attributes, target_attr):
-		# target_values_probabilities = []
+
 		self.target_values_frecuency = {}
 		self.values_frecuency = {}
+
 		for attribute in attributes:
 			self.values_frecuency[attribute] = {}
+
 		for instance in data:
-			if instance[target_attr] in self.target_values_frecuency:
-				self.target_values_frecuency[instance[target_attr]] += 1
+
+			# Se calculan frecuencias de los valores del atributo objetivo.
+			if instance[target_attr].decode() in self.target_values_frecuency:
+				self.target_values_frecuency[instance[target_attr].decode()] += 1
 			else:
-				self.target_values_frecuency[instance[target_attr]] = 1
-			#SE PIERDE LA GENERALIDAD CON EL TARGET ATTRIBUTE
+				self.target_values_frecuency[instance[target_attr].decode()] = 1
+			
+			# Se calculan frecuencias de los valores del resto de los atributos.
 			for attribute in attributes:
-				# print(attribute)
-				# print(instance[attribute])
-				# print(self.values_frecuency[attribute])
+
+				# Si ya se han contado ejemplos para ese valor se suma uno a su frecuencia
+				# en el valor del atributo objetivo correspondiente.
 				if instance[attribute] in self.values_frecuency[attribute]:
 					if instance[target_attr]==b'YES':
-						self.values_frecuency[attribute][instance[attribute]][b'YES'] += 1
+						self.values_frecuency[attribute][instance[attribute]]['YES'] += 1
 					elif instance[target_attr]==b'NO':
-						self.values_frecuency[attribute][instance[attribute]][b'NO'] += 1
+						self.values_frecuency[attribute][instance[attribute]]['NO'] += 1
+				
+				# En caso contrario, primero se crea la entrada de ese valor, para luego
+				# colocarle el contador en 1 en dónde corresponda.
 				else:
-					# print(self.values_frecuency[attribute][instance[attribute]])
-					self.values_frecuency[attribute][instance[attribute]]= {b'YES':0,b'NO':0}
+					self.values_frecuency[attribute][instance[attribute]]= {'YES':0,'NO':0}
 					if instance[target_attr]==b'YES':
-						self.values_frecuency[attribute][instance[attribute]][b'YES'] = 1
+						self.values_frecuency[attribute][instance[attribute]]['YES'] = 1
 					elif instance[target_attr]==b'NO':
-						self.values_frecuency[attribute][instance[attribute]][b'NO'] = 1
+						self.values_frecuency[attribute][instance[attribute]]['NO'] = 1
 
-#   	for instance in data:
-#    	for attribute in attributes:
-#    		if instance[attribute] in self.values_frecuency[attribute]:
-#    			sumamos 1 a la coordenada dependiendo de si es YES o NO
-#    		else:
-#    			instance[target_attr] = 'YES' (1,0)
-#
-#
-#
-# 	self.values_frecuency: {
-# 		'Viento': {
-# 			'Fuerte': ( , 0.56) #Primer coordenada corresponde YES
-# 			'Debil': ( , )
-# 		}
-# 	}
-#
-# def classify(self, instance):
-# 	self.target_values_frecuenc
+
+	def classify(self, instance):
+		# TODO
+		return 'YES'

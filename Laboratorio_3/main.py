@@ -1,22 +1,9 @@
 import utils
 from naive_bayes import NaiveBayes
-
-
-# Leemos data set del laboratorio
-examples = utils.read_file('Autism-Adult-Data.arff')
-data_set = examples[0]  # Datos
-metadata = examples[1]  # Metadatos
-
-
-# Separamos el data set en dos subconjuntos
-splitted_data = utils.split_20_80(data_set)
-
-validation_set = splitted_data[0]
-training_set = splitted_data[1]
-
-utils.read_file
+import numpy as np
 
 # Atributos a tener en cuenta
+target_attr = 'Class/ASD'
 attributes = ['A1_Score',
               'A2_Score',
               'A3_Score',
@@ -37,19 +24,39 @@ attributes = ['A1_Score',
               'age_desc',
               'relation']
 
-res = NaiveBayes(training_set, attributes, 'Class/ASD')
-# res(instance) = clasificacion
 
-# nv.clasify(insance)
+#######################################################################################
+################           Carga y procesamiento de datos          ####################
+#######################################################################################
+ 
+# Leemos data set del laboratorio
+examples = utils.read_file('Autism-Adult-Data.arff')
+data_set = examples[0]  # Datos
+metadata = examples[1]  # Metadatos
 
-# utils.v
-values_frecuency = {}
-print(values_frecuency)
-print(res.values_frecuency)
-for key, value in res.values_frecuency.items():
-    print(key)
-    print(value)
-    for key2, value2 in value.items():
-        print('   '+ key2)
-print(res.target_values_frecuency[b'YES'])
-# print(res.values_frecuency['jundice'])
+# Se procesan los valores faltantes
+utils.process_missing_values(data_set,attributes)
+
+# Se procesan los valores numéricos
+# TODO
+utils.process_numeric_values(data_set,attributes)
+
+# Separamos el data set en dos subconjuntos
+splitted_data = utils.split_20_80(data_set)
+
+validation_set = splitted_data[0]
+training_set = splitted_data[1]
+
+
+
+#######################################################################################
+###########################           Parte 1          ################################
+#######################################################################################
+
+# Se genera un clasificador bayesiano sencillo entrenándolo con el set de entrenamiento.
+nb_classifier = NaiveBayes(training_set, attributes, target_attr)
+
+# Se valida el clasificador con el set de validación.
+result = utils.validate(validation_set , nb_classifier, target_attr)
+
+print(result)
