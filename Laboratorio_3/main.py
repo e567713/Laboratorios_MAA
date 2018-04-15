@@ -1,6 +1,5 @@
 import utils
 from naive_bayes import NaiveBayes
-import numpy as np
 
 # Atributos a tener en cuenta
 target_attr = 'Class/ASD'
@@ -54,9 +53,9 @@ training_set = splitted_data[1]
 #######################################################################################
 
 # Se genera un clasificador bayesiano sencillo entrenándolo con el set de entrenamiento.
-nb_classifier = NaiveBayes(training_set, attributes, target_attr)
+nb_classifier = NaiveBayes(training_set[:5], attributes, target_attr)
 
 # Se valida el clasificador con el set de validación.
-result = utils.validate(validation_set , nb_classifier, target_attr)
+result = utils.validate(validation_set[:1] , nb_classifier, target_attr)
 
 print(result)
