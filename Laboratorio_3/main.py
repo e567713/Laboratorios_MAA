@@ -1,6 +1,5 @@
 import utils
 from naive_bayes import NaiveBayes
-import numpy as np
 
 # Data set del teórico
 S = [
@@ -71,4 +70,9 @@ nb_classifier = NaiveBayes(training_set, attributes, target_attr)
 # Se valida el clasificador con el set de validación.
 result = utils.validate(validation_set , nb_classifier, target_attr)
 
-print(result)
+print("-------------------------------------------------------------------------------------")
+print("Naive Bayes")
+print()
+print("Tasa de aciertos sobre un conjunto de validación con", len(validation_set), "ejemplos:")
+print("\t",result)
+print("-------------------------------------------------------------------------------------")

@@ -73,9 +73,11 @@ def validate(validation_set , classifier, target_attr):
         return 1
 
     errors = 0
-    
+    hits = 0
+
     for instance in validation_set:
         if instance[target_attr].decode() != classifier.classify(instance):
             errors += 1
-
-    return errors / len(validation_set)
+        else:
+            hits += 1
+    return hits / len(validation_set)
