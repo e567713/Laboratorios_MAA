@@ -75,8 +75,7 @@ class NaiveBayes:
 
 		
 		# Se clasifica según el valor de target_attr con mayor probabilidad.
-		reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
-		return 'NO'
+		return reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
 
 	def m_estimate(self, instance, attr, target_attr_value):
 		# OBS: Asume prioridad apriori con distribución uniforme.
