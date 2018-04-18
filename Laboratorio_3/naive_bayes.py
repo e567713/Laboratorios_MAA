@@ -1,5 +1,7 @@
 import numpy as np
 import math
+from functools import reduce
+
 class NaiveBayes:
 	def __init__(self, data, attributes, target_attr):
 
@@ -8,10 +10,10 @@ class NaiveBayes:
 		self.target_attr = target_attr
 		self.attributes = attributes
 		self.total = len(data)
+		self.m = 0.5
 
 		for attribute in attributes:
 			self.values_frecuency[attribute] = {}
-
 		for instance in data:
 
 			# Se calculan frecuencias de los valores del atributo objetivo.
@@ -52,28 +54,43 @@ class NaiveBayes:
 		# Recorre los valores del atributo objetivo.
 		# Ej: Pasa por 'YES' y por 'NO'.
 		for target_attr_value in self.target_values_frecuency.keys():
-			print()
-			print('Caclulando prob para: ', target_attr_value)
-			print()
-			# Probabilidad del valor objetivo en todo el conjunto.
+	
+			# Se almacena probabilidad del valor objetivo en todo el conjunto.
 			# Ej: P(target_attr = 'YES')
 			result[target_attr_value] = self.target_values_frecuency[target_attr_value]/self.total
-			
-			# Se recorren los atributos multiplicando la probabilidad anterior por las
-			# probabilidades condicionales.
+
+
+			# Se recorren los atributos de la instancia almacenando su frecuencia.
 			# Ej: P(gender = m | target_attr = 'NO')
 			for attr in self.attributes:
-				print()
-				print('Atributo: ', attr)
-				print(self.values_frecuency[attr])
-				result[target_attr_value] *= self.values_frecuency[attr][instance[attr]][target_attr_value] / self.target_values_frecuency[target_attr_value]
 
-		# maximum_prob = 0
-		# best_value = 0
-		# for target_attr_value in result.keys():
-		# 	if result[target_attr_value] > maximum_prob:
-		# 		best_value = target_attr_value
-		# 		maximum_prob = result[best_value]
+				# Si encuentro un valor nunca visto anteriormente en el atributo attr,
+				# se lo agrega con frecuencia 0 (es agregado para tenerlo en cuenta a la 
+				# hora de calcular la prioridad p del estimador m en esta y futuras clasificaciones).
+				if not instance[attr] in self.values_frecuency[attr]:
+					self.values_frecuency[attr][instance[attr]] = {'YES':0, 'NO':0}
 
-		# return best_value
+				# Se multiplica la aproximación al valor que se viene calculando.
+				result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
+
+		
+		# Se clasifica según el valor de target_attr con mayor probabilidad.
+		reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
 		return 'NO'
+
+	def m_estimate(self, instance, attr, target_attr_value):
+		# OBS: Asume prioridad apriori con distribución uniforme.
+
+		# Ej: P(attr = instance[attr] | target_attr = target_attr_value)
+		numerator = self.values_frecuency[attr][instance[attr]][target_attr_value]
+		
+		# Se le suma m*p (dónde p = 1/|valores posibles de attr|) 
+		numerator += self.m * (1/len(self.values_frecuency[attr]))
+
+		# Ej: P(target_attr = target_attr_value)
+		denominator = self.target_values_frecuency[target_attr_value]
+
+		# Se le suma m
+		denominator += self.m
+
+		return numerator / denominator

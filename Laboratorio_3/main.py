@@ -53,9 +53,14 @@ training_set = splitted_data[1]
 #######################################################################################
 
 # Se genera un clasificador bayesiano sencillo entrenándolo con el set de entrenamiento.
-nb_classifier = NaiveBayes(training_set[:5], attributes, target_attr)
+nb_classifier = NaiveBayes(training_set, attributes, target_attr)
 
 # Se valida el clasificador con el set de validación.
-result = utils.validate(validation_set[:1] , nb_classifier, target_attr)
+result = utils.validate(validation_set , nb_classifier, target_attr)
 
-print(result)
+print("-------------------------------------------------------------------------------------")
+print("Naive Bayes")
+print()
+print("Tasa de aciertos sobre un conjunto de validación con", len(validation_set), "ejemplos:")
+print("\t",result)
+print("-------------------------------------------------------------------------------------")
