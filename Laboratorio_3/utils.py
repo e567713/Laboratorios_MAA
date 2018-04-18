@@ -81,3 +81,24 @@ def validate(validation_set , classifier, target_attr):
         else:
             hits += 1
     return hits / len(validation_set)
+
+
+def find_most_common_function_value(data, target_attr):
+    # Devuelve el valor más común del atributo target_attr en el conjunto data
+    count_dict = {}
+    max_values = []
+    max_qty = 0
+    for instance in data:
+        if (instance[target_attr] in count_dict):
+            count_dict[instance[target_attr]] += 1
+        else:
+            count_dict[instance[target_attr]] = 1
+    for key, value in count_dict.items():
+        if value > max_qty:
+            max_qty = value
+            max_values = []
+            max_values.append(key)
+        elif value == max_qty:
+            max_values.append(key)
+    max_v = random.choice(max_values)
+    return max_v.decode() if not isinstance(max_v, str) else max_v
