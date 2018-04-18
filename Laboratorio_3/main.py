@@ -1,6 +1,18 @@
 import utils
 from naive_bayes import NaiveBayes
 
+# Data set del teórico
+S = [
+    {'Dedicacion': 'Alta', 'Dificultad': 'Alta', 'Horario': 'Nocturno',
+        'Humedad': 'Media', 'Humor Docente': 'Bueno', 'Salva': 'Yes'},
+    {'Dedicacion': 'Baja', 'Dificultad': 'Media', 'Horario': 'Matutino',
+        'Humedad': 'Alta', 'Humor Docente': 'Malo', 'Salva': 'No'},
+    {'Dedicacion': 'Media', 'Dificultad': 'Alta', 'Horario': 'Nocturno',
+        'Humedad': 'Media', 'Humor Docente': 'Malo', 'Salva': 'Yes'},
+    {'Dedicacion': 'Media', 'Dificultad': 'Alta', 'Horario': 'Matutino',
+        'Humedad': 'Alta', 'Humor Docente': 'Bueno', 'Salva': 'No'},
+]
+
 # Atributos a tener en cuenta
 target_attr = 'Class/ASD'
 attributes = ['A1_Score',
