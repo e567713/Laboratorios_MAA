@@ -31,25 +31,34 @@ def split_20_80(d):
     return (subset_20, subset_80)
 
 
-def process_missing_values(data, attributes):
+def process_missing_values(data, attributes, use_most_common):
     # Procesa el conjunto de datos para atacar el problema de valores incompletos.
 
     # Guardará los valores más comunes para los atributos que necesiten calcularse.
     most_common = {}
+    i = len(data)
 
-    for instance in data:
+    # Se itera de atrás para adelante para poder borrar por indice si not use_most_common
+    for instance in reversed(data):
+        i -= 1
         for attribute in attributes:
 
             # Si se encuentra un valor faltante.
             if ((isinstance(instance[attribute], np.float64) and np.isnan(instance[attribute])) or (isinstance(instance[attribute], np.bytes_) and instance[attribute] == b'?')):
+                # Si use_most_common, se cambia el valor faltante por el más común del atributo,
+                # si no, se descarta el ejemplo
+                if use_most_common:
+                    # Si no se ha calculado el valor más común, se lo calcula y almacena.
+                    if not attribute in most_common:
+                        most_common[attribute]=found_most_common_attribute_value(
+                            data, attribute)
 
-                # Si no se ha calculado el valor más común, se lo calcula y almacena.
-                if not attribute in most_common:
-                    most_common[attribute]=found_most_common_attribute_value(
-                        data, attribute)
-
-                # Se cambia el valor faltante por el más común.
-                instance[attribute] = most_common[attribute]
+                    # Se cambia el valor faltante por el más común.
+                    instance[attribute] = most_common[attribute]
+                else:
+                    # Se descarta el ejemplo
+                    data = np.delete(data,i)
+                    break
     return data
 
 
@@ -93,5 +102,41 @@ def validate(validation_set , classifier, target_attr):
         else:
             hits += 1
     return hits / len(validation_set)
+
+
+def scale(data, attributes, use_standarization):
+    # 'data' es es el conjunto de entrenamiento
+    # 'attributes' un array con los nombres de los atributos
+    # si 'use_standarization' = true, normaliza usando media y varianza y retorna (data, media, varianza)
+    # si no, usa min-max y retorna (data, min, max)
+    numeric_attributes_values = {}
+    # Se recorre el data para extraer los valores de los distintos atributos numéricos
+    for instance in data:
+        for attribute in attributes:
+            #  Si se encuentra un valor numérico se agrega al diccionario
+            if isinstance(instance[attribute], np.float64):
+                if attribute in numeric_attributes_values:
+                    numeric_attributes_values[attribute].append(instance[attribute])
+                else:
+                    numeric_attributes_values[attribute] = [instance[attribute]]
+    print()
+    print('first',data)
+    print()
+    for att, values in numeric_attributes_values.items():
+        values_np = np.asarray(values)
+        if use_standarization:
+            scaled = (values_np - values_np.mean()) / values_np.std()
+            i = -1
+            for instance in data:
+                i += 1
+                instance[att] = scaled[i]
+        else:
+            scaled = (values_np - values_np.min()) / (values_np.max() - values_np.min())
+            i = -1
+            for instance in data:
+                i += 1
+                instance[att] = scaled[i]
+    print()
+    print('second',data)
 
 

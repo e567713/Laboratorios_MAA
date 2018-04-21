@@ -46,7 +46,7 @@ data_set = examples[0]  # Datos
 metadata = examples[1]  # Metadatos
 
 # Se procesan los valores faltantes
-utils.process_missing_values(data_set,attributes)
+utils.process_missing_values(data_set,attributes, True)
 
 # Se procesan los valores numéricos
 # TODO
