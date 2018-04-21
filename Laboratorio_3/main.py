@@ -50,7 +50,7 @@ utils.process_missing_values(data_set,attributes)
 
 # Se procesan los valores numéricos
 # TODO
-utils.process_numeric_values(data_set,attributes)
+utils.process_numeric_values_discretize(data_set,attributes)
 
 # Separamos el data set en dos subconjuntos
 splitted_data = utils.split_20_80(data_set)

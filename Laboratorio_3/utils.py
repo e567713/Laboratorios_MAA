@@ -1,3 +1,4 @@
+# coding=utf-8
 from scipy.io import arff
 import copy
 import random
@@ -58,11 +59,22 @@ def found_most_common_attribute_value(data, attribute):
     return max(values, key=data.get)
 
 
-def process_numeric_values(data, attributes):
-    # Procesa el conjunto de datos para atacar el problema de valores numéricos.
+def process_numeric_values_discretize(data, attributes):
+    # Se discretizan las edades en decadas para que no queden los atributos
+    # dispersos y con poca probabilidad.
+    # OBS: Evita la columna 'result'.
+    for instance in data:
+        instance['age'] = instance['age'] // 10
+    return data
+
+def process_numeric_values_normalize(data, attributes):
+    # Se discretizan las edades en decadas para que no queden los atributos
+    # dispersos y con poca probabilidad.
     # OBS: Evita la columna 'result'.
 
-    # TODO
+    #Asumimos que tienen una distribucion gaussiana
+    for instance in data:
+        instance['age'] = instance['age'] // 10
     return data
 
 

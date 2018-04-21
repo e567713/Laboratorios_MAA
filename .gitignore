@@ -1,6 +1,7 @@
 .vscode/settings.json
 # Byte-compiled / optimized / DLL files
 Laboratorio_3/__pycache__/
+Laboratorio_3/.idea
 *.py[cod]
 *$py.class
 
