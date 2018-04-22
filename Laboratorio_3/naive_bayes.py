@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as np
 import math
 from functools import reduce
@@ -7,11 +8,17 @@ class NaiveBayes:
 
 		self.target_values_frecuency = {}
 		self.values_frecuency = {}
+		self.normalize_age_probabilities = {}
 		self.target_attr = target_attr
 		self.attributes = attributes
 		self.total = len(data)
 		self.m = 0.5
+		self.count_yes=0
+		self.count_no=0
 
+		self.normalize_age_probabilities["media"] = {'YES':0,'NO':0}
+		self.normalize_age_probabilities["variance"] = {'YES':0,'NO':0}
+		print (len(data))
 		for attribute in attributes:
 			self.values_frecuency[attribute] = {}
 		for instance in data:
@@ -42,6 +49,22 @@ class NaiveBayes:
 					elif instance[target_attr].decode() == 'NO':
 						self.values_frecuency[attribute][instance[attribute]]['NO'] = 1
 
+			#Se agregan valores de age para calcular la media y la varianza
+			if instance[target_attr].decode() == 'YES':
+				self.count_yes += 1
+				self.normalize_age_probabilities["media"]['YES'] += instance["age"]
+				self.normalize_age_probabilities["variance"]['YES'] += instance["age"]**2
+			if instance[target_attr].decode() == 'NO':
+				self.count_no += 1
+				self.normalize_age_probabilities["media"]['NO'] += instance["age"]
+				self.normalize_age_probabilities["variance"]['NO'] += instance["age"]**2
+
+		self.normalize_age_probabilities["media"]['YES'] = self.normalize_age_probabilities["media"]['YES'] / self.count_yes
+		self.normalize_age_probabilities["media"]['NO'] = self.normalize_age_probabilities["media"]['NO'] / self.count_no
+		self.normalize_age_probabilities["variance"]['YES'] = self.normalize_age_probabilities["variance"]['YES'] / self.count_yes
+		self.normalize_age_probabilities["variance"]['NO'] = self.normalize_age_probabilities["variance"]['NO'] / self.count_no
+		self.normalize_age_probabilities["variance"]['YES'] += -self.normalize_age_probabilities["media"]['YES']**2
+		self.normalize_age_probabilities["variance"]['NO'] += -self.normalize_age_probabilities["media"]['NO']**2
 
 	def classify(self, instance):
 	# Clasifica la instancia dada.
@@ -93,3 +116,46 @@ class NaiveBayes:
 		denominator += self.m
 
 		return numerator / denominator
+
+	def normal_probability(self, value, media , variance):
+		return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
+
+	def classify_normalization(self, instance):
+		# Clasifica la instancia dada.
+
+		# En result[value] se almacenará  ∏i P(instance[i]|value).P(value)
+		# dónde instance[i] es el valor del atributo i en la instancia dada y
+		# value es un valor posible del atributo objetivo.
+		result = {}
+
+		# Recorre los valores del atributo objetivo.
+		# Ej: Pasa por 'YES' y por 'NO'.
+		for target_attr_value in self.target_values_frecuency.keys():
+
+			# Se almacena probabilidad del valor objetivo en todo el conjunto.
+			# Ej: P(target_attr = 'YES')
+			result[target_attr_value] = self.target_values_frecuency[target_attr_value]/self.total
+
+
+			# Se recorren los atributos de la instancia almacenando su frecuencia.
+			# Ej: P(gender = m | target_attr = 'NO')
+			for attr in self.attributes:
+
+				# Si encuentro un valor nunca visto anteriormente en el atributo attr,
+				# se lo agrega con frecuencia 0 (es agregado para tenerlo en cuenta a la
+				# hora de calcular la prioridad p del estimador m en esta y futuras clasificaciones).
+				if not instance[attr] in self.values_frecuency[attr]:
+					self.values_frecuency[attr][instance[attr]] = {'YES':0, 'NO':0}
+
+				# Se multiplica la aproximación al valor que se viene calculando.
+				if attr=="age":
+					if target_attr_value == 'YES':
+						result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['YES'],self.normalize_age_probabilities['variance']['YES'])
+					else:
+						result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['NO'],self.normalize_age_probabilities['variance']['NO'])
+				else:
+					result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
+
+		# Se clasifica según el valor de target_attr con mayor probabilidad.
+		return reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
+

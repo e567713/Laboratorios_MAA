@@ -44,13 +44,12 @@ attributes = ['A1_Score',
 examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
 metadata = examples[1]  # Metadatos
-
 # Se procesan los valores faltantes
 utils.process_missing_values(data_set,attributes, True)
 
 # Se procesan los valores numéricos
 # TODO
-utils.process_numeric_values(data_set,attributes)
+utils.process_numeric_values_discretize(data_set,attributes)
 
 # Separamos el data set en dos subconjuntos
 splitted_data = utils.split_20_80(data_set)
