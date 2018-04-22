@@ -44,7 +44,6 @@ attributes = ['A1_Score',
 examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
 metadata = examples[1]  # Metadatos
-
 # Se procesan los valores faltantes
 utils.process_missing_values(data_set,attributes, True)
 

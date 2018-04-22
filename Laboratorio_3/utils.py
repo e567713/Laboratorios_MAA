@@ -97,7 +97,7 @@ def validate(validation_set , classifier, target_attr):
     hits = 0
 
     for instance in validation_set:
-        if instance[target_attr].decode() != classifier.classify(instance):
+        if instance[target_attr].decode() != classifier.classify_normalization(instance):
             errors += 1
         else:
             hits += 1
