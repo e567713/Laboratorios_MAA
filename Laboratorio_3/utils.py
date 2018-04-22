@@ -95,8 +95,8 @@ def validate(validation_set , classifier, target_attr):
 def scale(data, attributes, use_standarization):
     # 'data' es es el conjunto de entrenamiento
     # 'attributes' un array con los nombres de los atributos
-    # si 'use_standarization' = true, normaliza usando media y varianza y retorna (data, media, varianza)
-    # si no, usa min-max y retorna (data, min, max)
+    # si 'use_standarization' = true, normaliza usando media y varianza
+    # si no, usa min-max
     numeric_attributes_values = {}
     # Se recorre el data para extraer los valores de los distintos atributos numéricos
     for instance in data:
@@ -107,9 +107,6 @@ def scale(data, attributes, use_standarization):
                     numeric_attributes_values[attribute].append(instance[attribute])
                 else:
                     numeric_attributes_values[attribute] = [instance[attribute]]
-    print()
-    print('first',data)
-    print()
     for att, values in numeric_attributes_values.items():
         values_np = np.asarray(values)
         if use_standarization:
@@ -124,7 +121,8 @@ def scale(data, attributes, use_standarization):
             for instance in data:
                 i += 1
                 instance[att] = scaled[i]
-    print()
-    print('second',data)
+    return(data)
+
+
 
 
