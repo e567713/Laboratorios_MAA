@@ -18,7 +18,7 @@ class NaiveBayes:
 
 		self.normalize_age_probabilities["media"] = {'YES':0,'NO':0}
 		self.normalize_age_probabilities["variance"] = {'YES':0,'NO':0}
-		print (len(data))
+
 		for attribute in attributes:
 			self.values_frecuency[attribute] = {}
 		for instance in data:
@@ -87,14 +87,10 @@ class NaiveBayes:
 			# Ej: P(gender = m | target_attr = 'NO')
 			for attr in self.attributes:
 
-				# Si encuentro un valor nunca visto anteriormente en el atributo attr,
-				# se lo agrega con frecuencia 0 (es agregado para tenerlo en cuenta a la 
-				# hora de calcular la prioridad p del estimador m en esta y futuras clasificaciones).
-				if not instance[attr] in self.values_frecuency[attr]:
-					self.values_frecuency[attr][instance[attr]] = {'YES':0, 'NO':0}
+				if instance[attr] in self.values_frecuency[attr]:
 
-				# Se multiplica la aproximación al valor que se viene calculando.
-				result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
+					# Se multiplica la aproximación al valor que se viene calculando.
+					result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
 
 		
 		# Se clasifica según el valor de target_attr con mayor probabilidad.
@@ -141,20 +137,18 @@ class NaiveBayes:
 			# Ej: P(gender = m | target_attr = 'NO')
 			for attr in self.attributes:
 
-				# Si encuentro un valor nunca visto anteriormente en el atributo attr,
-				# se lo agrega con frecuencia 0 (es agregado para tenerlo en cuenta a la
-				# hora de calcular la prioridad p del estimador m en esta y futuras clasificaciones).
-				if not instance[attr] in self.values_frecuency[attr]:
-					self.values_frecuency[attr][instance[attr]] = {'YES':0, 'NO':0}
-
-				# Se multiplica la aproximación al valor que se viene calculando.
-				if attr=="age":
-					if target_attr_value == 'YES':
-						result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['YES'],self.normalize_age_probabilities['variance']['YES'])
-					else:
-						result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['NO'],self.normalize_age_probabilities['variance']['NO'])
-				else:
-					result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
+					# Se multiplica la aproximación al valor que se viene calculando.
+					
+					# Si es numérico
+					if attr=="age":
+						if target_attr_value == 'YES':
+							result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['YES'],self.normalize_age_probabilities['variance']['YES'])
+						else:
+							result[target_attr_value] *= self.normal_probability(instance[attr],self.normalize_age_probabilities['media']['NO'],self.normalize_age_probabilities['variance']['NO'])
+					
+					# Sino es numérico y el valor se ha visto en el conjunto de entrenamiento
+					elif instance[attr] in self.values_frecuency[attr]:
+						result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
 
 		# Se clasifica según el valor de target_attr con mayor probabilidad.
 		return reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
