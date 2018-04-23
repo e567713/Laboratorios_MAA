@@ -47,7 +47,10 @@ class NaiveBayes:
 					if instance[target_attr].decode() == 'YES':
 						self.values_frecuency[attribute][instance[attribute]]['YES'] = 1
 					elif instance[target_attr].decode() == 'NO':
+						# print (attribute)
+						# print (instance[attribute])
 						self.values_frecuency[attribute][instance[attribute]]['NO'] = 1
+						# print ("PASOOO")
 
 			#Se agregan valores de age para calcular la media y la varianza
 			if instance[target_attr].decode() == 'YES':
@@ -77,7 +80,7 @@ class NaiveBayes:
 		# Recorre los valores del atributo objetivo.
 		# Ej: Pasa por 'YES' y por 'NO'.
 		for target_attr_value in self.target_values_frecuency.keys():
-	
+
 			# Se almacena probabilidad del valor objetivo en todo el conjunto.
 			# Ej: P(target_attr = 'YES')
 			result[target_attr_value] = self.target_values_frecuency[target_attr_value]/self.total

@@ -78,16 +78,6 @@ def process_numeric_values_discretize(data, attributes):
         instance['age'] = instance['age'] // 10
     return data
 
-def process_numeric_values_normalize(data, attributes):
-    # Se discretizan las edades en decadas para que no queden los atributos
-    # dispersos y con poca probabilidad.
-    # OBS: Evita la columna 'result'.
-
-    #Asumimos que tienen una distribucion gaussiana
-    for instance in data:
-        instance['age'] = instance['age'] // 10
-    return data
-
 
 def validate(validation_set , classifier, target_attr, normalize):
     # Realiza la validación del clasificador.
