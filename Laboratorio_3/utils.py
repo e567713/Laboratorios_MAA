@@ -164,7 +164,7 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
                 result = KNN.classify(instance, training_set, k, target_attr, weight)
 
                 # Se verifica el resultado y se guarda el error cometido validado
-                set_errors.append(is_correct_result(instance, result, target_attr))
+                set_errors.append(wrong_result(instance, result, target_attr))
             else:
                 # PONER ACA EL CLASIFICADOR DE BAYES, Y APENDEAR UN 1 EN set_errors 
                 # SI HAY ERROR, O UN 0 SI NO HAY ERROR
@@ -179,8 +179,9 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
     return sum(errors) / k_fold
 
 
-def is_correct_result(instance, result, target_attr):
-    return 1 if instance[target_attr] == result else 0
+def wrong_result(instance, result, target_attr):
+    # retorna 1 si el atributo objetivo de la instancia es distinto a result
+    return 1 if instance[target_attr] != result else 0
 
 def media(array):
     return (sum(array) / len(array))
