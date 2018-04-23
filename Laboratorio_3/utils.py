@@ -5,6 +5,7 @@ import random
 from collections import Counter
 import numpy as np
 import KNN
+from naive_bayes import NaiveBayes
 
 
 def read_file(path):
@@ -88,7 +89,7 @@ def process_numeric_values_normalize(data, attributes):
     return data
 
 
-def validate(validation_set , classifier, target_attr):
+def validate(validation_set , classifier, target_attr, normalize):
     # Realiza la validación del clasificador.
     
     if len(validation_set) == 0:
@@ -98,7 +99,7 @@ def validate(validation_set , classifier, target_attr):
     hits = 0
 
     for instance in validation_set:
-        if instance[target_attr].decode() != classifier.classify_normalization(instance):
+        if instance[target_attr].decode() != classifier.classify(instance, normalize):
             errors += 1
         else:
             hits += 1
@@ -137,7 +138,7 @@ def scale(data, attributes, use_standarization):
     return(data)
 
 
-def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight):
+def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, nb_normalize):
     # Implementación del algoritmo k-fold cross-validation
     # Nota: Recordar que el conjunto data fue seleccionado al azar del conjunto
     # inicial de datos.
@@ -156,19 +157,20 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
         # Se unen los restantes subconjuntos para formar el nuevo set de entrenamiento.
         training_set = np.concatenate(folds)
-        
+        nb_classifier = NaiveBayes(training_set, attributes, target_attr)
+
         set_errors = []
         # Se entrena.
         for instance in validation_set:
             if applicate_KNN:
                 result = KNN.classify(instance, training_set, k, target_attr, weight)
 
-                # Se verifica el resultado y se guarda el error cometido validado
-                set_errors.append(wrong_result(instance, result, target_attr))
             else:
-                # PONER ACA EL CLASIFICADOR DE BAYES, Y APENDEAR UN 1 EN set_errors 
-                # SI HAY ERROR, O UN 0 SI NO HAY ERROR
-                return
+                result = nb_classifier.classify(instance, nb_normalize)
+
+
+            # Se verifica el resultado y se guarda el error cometido validado
+            set_errors.append(wrong_result(instance, result, target_attr))
 
         # Se guarda el promedio de errores del subconjunto i
         errors.append(media(set_errors))
@@ -181,7 +183,9 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
 def wrong_result(instance, result, target_attr):
     # retorna 1 si el atributo objetivo de la instancia es distinto a result
-    return 1 if instance[target_attr] != result else 0
+    y = instance[target_attr]
+    x = y if isinstance(y, str) else y.decode()
+    return 1 if x != result else 0
 
 def media(array):
     return (sum(array) / len(array))

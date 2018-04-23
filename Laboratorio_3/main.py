@@ -49,7 +49,7 @@ utils.process_missing_values(data_set,attributes, True)
 
 # Se procesan los valores numéricos
 # TODO
-utils.process_numeric_values_discretize(data_set,attributes)
+# utils.process_numeric_values_discretize(data_set,attributes)
 
 # Separamos el data set en dos subconjuntos
 splitted_data = utils.split_20_80(data_set)
@@ -67,11 +67,12 @@ training_set = splitted_data[1]
 nb_classifier = NaiveBayes(training_set, attributes, target_attr)
 
 # Se valida el clasificador con el set de validación.
-result = utils.validate(validation_set , nb_classifier, target_attr)
+result = utils.cross_validation(data_set, attributes, target_attr, 5, False, 0, False, True)
 
 print("-------------------------------------------------------------------------------------")
 print("Naive Bayes")
 print()
 print("Tasa de aciertos sobre un conjunto de validación con", len(validation_set), "ejemplos:")
-print("\t",result)
+print("\t",1-result)
+# print("\t",result2)
 print("-------------------------------------------------------------------------------------")
