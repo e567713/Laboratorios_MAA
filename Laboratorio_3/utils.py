@@ -133,7 +133,7 @@ def scale(data, attributes, use_standarization):
     return(data, scalation_parameters)
 
 
-def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, nb_normalize):
+def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, normalize, use_standarization):
     # Implementación del algoritmo k-fold cross-validation
     # Nota: Recordar que el conjunto data fue seleccionado al azar del conjunto
     # inicial de datos.
@@ -152,16 +152,24 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
         # Se unen los restantes subconjuntos para formar el nuevo set de entrenamiento.
         training_set = np.concatenate(folds)
+        
         if not applicate_KNN:
             nb_classifier = NaiveBayes(training_set, attributes, target_attr)
+        elif normalize:
+            scale_values = scale(training_set, attributes, use_standarization)
+            training_set = scale_values[0]
+            scalation_parameters = scale_values[1]
 
         set_errors = []
         # Se entrena.
         for instance in validation_set:
             if applicate_KNN:
-                result = KNN.classify(instance, training_set, k, target_attr, weight, attributes)
+                instance_copy = copy.deepcopy(instance)
+                if normalize:
+                    instance_copy = scale_instance(instance_copy, scalation_parameters, use_standarization)
+                result = KNN.classify(instance_copy, training_set, k, target_attr, weight, attributes)
             else:
-                result = nb_classifier.classify(instance, nb_normalize)
+                result = nb_classifier.classify(instance, normalize)
 
 
             # Se verifica el resultado y se guarda el error cometido validado
@@ -185,4 +193,13 @@ def wrong_result(instance, result, target_attr):
 def media(array):
     return (sum(array) / len(array))
 
+def scale_instance(instance, scalation_parameters, use_standarization):
+    for att, parameters in scalation_parameters.items():
+        mean_or_min = parameters[0]
+        std_or_max = parameters[1]
+        if use_standarization:
+            instance[att] = ((instance[att] - mean_or_min) / std_or_max)
+        else:
+            instance[att] = (instance[att] - mean_or_min) / (std_or_max - mean_or_min)
+    return instance
 
