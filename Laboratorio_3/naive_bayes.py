@@ -53,21 +53,23 @@ class NaiveBayes:
 						# print ("PASOOO")
 
 			#Se agregan valores de age para calcular la media y la varianza
-			if instance[target_attr].decode() == 'YES':
-				self.count_yes += 1
-				self.normalize_age_probabilities["media"]['YES'] += instance["age"]
-				self.normalize_age_probabilities["variance"]['YES'] += instance["age"]**2
-			if instance[target_attr].decode() == 'NO':
-				self.count_no += 1
-				self.normalize_age_probabilities["media"]['NO'] += instance["age"]
-				self.normalize_age_probabilities["variance"]['NO'] += instance["age"]**2
+			if "age" in attributes:
+				if instance[target_attr].decode() == 'YES':
+					self.count_yes += 1
+					self.normalize_age_probabilities["media"]['YES'] += instance["age"]
+					self.normalize_age_probabilities["variance"]['YES'] += instance["age"]**2
+				if instance[target_attr].decode() == 'NO':
+					self.count_no += 1
+					self.normalize_age_probabilities["media"]['NO'] += instance["age"]
+					self.normalize_age_probabilities["variance"]['NO'] += instance["age"]**2
 
-		self.normalize_age_probabilities["media"]['YES'] = self.normalize_age_probabilities["media"]['YES'] / self.count_yes
-		self.normalize_age_probabilities["media"]['NO'] = self.normalize_age_probabilities["media"]['NO'] / self.count_no
-		self.normalize_age_probabilities["variance"]['YES'] = self.normalize_age_probabilities["variance"]['YES'] / self.count_yes
-		self.normalize_age_probabilities["variance"]['NO'] = self.normalize_age_probabilities["variance"]['NO'] / self.count_no
-		self.normalize_age_probabilities["variance"]['YES'] += -self.normalize_age_probabilities["media"]['YES']**2
-		self.normalize_age_probabilities["variance"]['NO'] += -self.normalize_age_probabilities["media"]['NO']**2
+		if "age" in attributes:
+			self.normalize_age_probabilities["media"]['YES'] = self.normalize_age_probabilities["media"]['YES'] / self.count_yes
+			self.normalize_age_probabilities["media"]['NO'] = self.normalize_age_probabilities["media"]['NO'] / self.count_no
+			self.normalize_age_probabilities["variance"]['YES'] = self.normalize_age_probabilities["variance"]['YES'] / self.count_yes
+			self.normalize_age_probabilities["variance"]['NO'] = self.normalize_age_probabilities["variance"]['NO'] / self.count_no
+			self.normalize_age_probabilities["variance"]['YES'] += -self.normalize_age_probabilities["media"]['YES']**2
+			self.normalize_age_probabilities["variance"]['NO'] += -self.normalize_age_probabilities["media"]['NO']**2
 
 	def classify(self, instance, normalize):
 	# Clasifica la instancia dada.

@@ -1,4 +1,6 @@
+# coding=utf-8
 import utils
+import id3
 from naive_bayes import NaiveBayes
 import copy
 import numpy as np
@@ -15,6 +17,13 @@ S = [
     {'Dedicacion': 'Media', 'Dificultad': 'Alta', 'Horario': 'Matutino',
         'Humedad': 'Alta', 'Humor Docente': 'Bueno', 'Salva': 'No'},
 ]
+
+# Atributos del ejemplo teórico a tener en cuenta
+target_attr_theoric = 'Juega'
+attributes_theoric = ['Tiempo',
+              'Temperatura',
+              'Humedad',
+              'Viento']
 
 # Atributos a tener en cuenta
 target_attr = 'Class/ASD'
@@ -47,6 +56,10 @@ attributes = ['A1_Score',
 examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
 metadata = examples[1]  # Metadatos
+
+examples_theoric = utils.read_file('Theoric.arff')
+data_set_theoric = examples_theoric[0]  # Datos
+metadata_theoric = examples_theoric[1]  # Metadatos
 # Se procesan los valores faltantes
 # utils.process_missing_values(data_set,attributes, True)
 
@@ -66,6 +79,30 @@ metadata = examples[1]  # Metadatos
 ###########################           Parte 1          ################################
 #######################################################################################
 
+instance = {'Tiempo': 'Soleado', 'Temperatura': 'Frio', 'Humedad': 'Alta','Viento': 'Fuerte'}
+instance2 = {'Tiempo': b'Soleado', 'Temperatura': b'Frio', 'Humedad': b'Alta','Viento': b'Fuerte'}
+print ()
+print ('Parte A)' )
+print("Para el ejemplo del teórico se clasifica la instancia <Soleado, Frio, Alta, Fuerte>")
+print ("Naive Bayes clasifica la instancia como: ")
+
+# Se copia el conjunto de datos original para no alterarlo.
+data_theoric = copy.deepcopy(data_set_theoric)
+
+#Se clasifica la instancia con NaiveBayes
+nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_attr_theoric)
+result_nb_theoric = nb_classifier_theoric.classify(instance,False)
+print("\t",result_nb_theoric)
+print ()
+print ("ID3 clasifica la instancia como: ")
+tree = id3.ID3_algorithm(data_theoric, attributes_theoric, 'Juega', True, False)
+print("\t",id3.validate_instance_extended(tree, instance2, b'Juega').decode())
+print ()
+
+
+
+
+
 # Se copia el conjunto de datos original para no alterarlo.
 data = copy.deepcopy(data_set)
 # Se ordenan aleatoriamente los ejemplos del conjunto para simular la
@@ -76,27 +113,27 @@ np.random.shuffle(data)
 # sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
 data1 = copy.deepcopy(data)
 data1 = utils.process_missing_values(data1,attributes, True)
-result1 = utils.cross_validation(data1, attributes, target_attr, 4, False, 0, False, False)
+result1 = utils.cross_validation(data1, attributes, target_attr, 10, False, None, None, False, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
 # sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
 data2 = copy.deepcopy(data)
 data2 = utils.process_missing_values(data2,attributes, False)
-result2 = utils.cross_validation(data2, attributes, target_attr, 4, False, 0, False, False)
+result2 = utils.cross_validation(data2, attributes, target_attr, 10, False, None, None, False, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
 # discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
 data3 = copy.deepcopy(data)
 data3 = utils.process_missing_values(data3,attributes, True)
 data3 = utils.process_numeric_values_discretize(data3,attributes)
-result3 = utils.cross_validation(data3, attributes, target_attr, 4, False, 0, False, False)
+result3 = utils.cross_validation(data3, attributes, target_attr, 10, False, None, None, False, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
 # discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
 data4 = copy.deepcopy(data)
 data4 = utils.process_missing_values(data4,attributes, False)
 data4 = utils.process_numeric_values_discretize(data4,attributes)
-result4 = utils.cross_validation(data4, attributes, target_attr, 4, False, 0, False, False)
+result4 = utils.cross_validation(data4, attributes, target_attr, 10, False, None, None, False, None)
 
 
 
@@ -104,27 +141,27 @@ result4 = utils.cross_validation(data4, attributes, target_attr, 4, False, 0, Fa
 # sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
 data5 = copy.deepcopy(data)
 data5 = utils.process_missing_values(data5,attributes, True)
-result5 = utils.cross_validation(data5, attributes, target_attr, 4, False, 0, False, True)
+result5 = utils.cross_validation(data5, attributes, target_attr, 10, False, None, None, True, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
 # sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
 data6 = copy.deepcopy(data)
 data6 = utils.process_missing_values(data6,attributes, False)
-result6 = utils.cross_validation(data6, attributes, target_attr, 4, False, 0, False, True)
+result6 = utils.cross_validation(data6, attributes, target_attr, 10, False, None, None, True, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
 # discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
 data7 = copy.deepcopy(data)
 data7 = utils.process_missing_values(data7,attributes, True)
 data7 = utils.process_numeric_values_discretize(data7,attributes)
-result7 = utils.cross_validation(data7, attributes, target_attr, 4, False, 0, False, True)
+result7 = utils.cross_validation(data7, attributes, target_attr, 10, False, None, None, True, None)
 
 # Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
 # discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
 data8 = copy.deepcopy(data)
 data8 = utils.process_missing_values(data8,attributes, False)
 data8 = utils.process_numeric_values_discretize(data8,attributes)
-result8 = utils.cross_validation(data8, attributes, target_attr, 4, False, 0, False, True)
+result8 = utils.cross_validation(data8, attributes, target_attr, 10, False, None, None, True, None)
 
 
 print("-------------------------------------------------------------------------------------")
@@ -149,3 +186,6 @@ print("\t",1-result7)
 print ("result 8: ")
 print("\t",1-result8)
 print("-------------------------------------------------------------------------------------")
+
+
+
