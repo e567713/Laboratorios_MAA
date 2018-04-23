@@ -4,7 +4,7 @@ import utils
 import random
 
 
-def get_k_nearest(instance, k, data, target_attr):
+def get_k_nearest(instance, k, data, attributes, target_attr):
   # Devuelve una tupla t = (distances, instances) ordenada de menor a mayor por distances de 
   # largo k siendo 'instances' las 'k' instancias más cercanas de 'data' y 'distances' 
   # son las distancias de las 'instances'.
@@ -15,7 +15,7 @@ def get_k_nearest(instance, k, data, target_attr):
   i = -1
   for example in data:
     i += 1
-    distances_array.append((i, distance(instance, example, target_attr)))
+    distances_array.append((i, distance(instance, example, attributes, target_attr)))
   distances_array.sort(key = lambda tup: tup[1])
   # print()
   # print('(indice, distancia) ordenado de menor a mayor')
@@ -26,30 +26,24 @@ def get_k_nearest(instance, k, data, target_attr):
   return dis_inst
 
 
-def distance(instance1, instance2, target_attr):
+def distance(instance1, instance2, attributes, target_attr):
   # Calcula la distancia euclidiana entre las 2 instancias
+  # Si el atributo no es numerico, la distancia es 1 si tiene diferentes valores
   # 'target_attr' es el nombre del atributo objetivo
-
-  # Descomentar para el training set hecho por nosotros
-  # instance1_values = list(instance1.values())
-  # instance2_values = list(instance2.values())
-
-  att_length = len(instance1) - 1 if target_attr in instance1.dtype.names else len(instance1)
-  
   sumatory = 0
-  for i in range (att_length):
-      if isinstance(instance1[i], np.float64):
-        sumatory += pow(abs(instance2[i] - instance1[i]), 2)
-      elif instance1[i] != instance2[i]:
+  for attribute in attributes:
+      if isinstance(instance1[attribute], np.float64):
+        sumatory += pow(abs(instance2[attribute] - instance1[attribute]), 2)
+      elif instance1[attribute] != instance2[attribute]:
         sumatory += 1
   return math.sqrt(sumatory)
 
 
-def classify(instance, data, k, target_attr, weight):
+def classify(instance, data, k, target_attr, weight, attributes):
   # Clasifica la instancia 'instance' para el conjunto de entrenamiento 'data', utilizando los 'k' casos más cercanos 
   # 'target_attr' es el nombre del atributo objetivo
   # si 'weight' es true se usa pesos para los 'k' más cercanos
-  nearest = get_k_nearest(instance, k, data, target_attr)
+  nearest = get_k_nearest(instance, k, data, attributes, target_attr)
 
   # print()
   # print(str(k) + '-nearest:')
@@ -110,10 +104,10 @@ def find_most_common_function_value(data, target_attr, use_weight):
   return max_v
 
 
-def validate(data, validation_set, target_attr):
+def validate(data, validation_set, target_attr, attributes):
   error = 0
   for instance in validation_set:
-    if classify(instance, data, 3, target_attr, False) != instance[target_attr]:
+    if classify(instance, data, 3, target_attr, False, attributes) != instance[target_attr]:
       error += 1
   return error
 
@@ -124,20 +118,6 @@ if __name__ == "__main__":
   ###########################            MAIN            ################################
   #######################################################################################
 
-
-  S = [
-    {'Dedicacion': 0, 'Dificultad': 'Alta', 'Horario': 'Nocturno',
-        'Humedad': 'Media', 'Humor Docente': 'Bueno', 'Salva': 'Yes'},
-    {'Dedicacion': 20, 'Dificultad': 'Media', 'Horario': 'Matutino',
-        'Humedad': 'Alta', 'Humor Docente': 'Malo', 'Salva': 'No'},
-    {'Dedicacion': 10, 'Dificultad': 'Alta', 'Horario': 'Nocturno',
-        'Humedad': 'Media', 'Humor Docente': 'Bueno', 'Salva': 'Yes'},
-    {'Dedicacion': 2, 'Dificultad': 'Alta', 'Horario': 'Matutino',
-        'Humedad': 'Alta', 'Humor Docente': 'Bueno', 'Salva': 'No'},
-  ]
-
-  instance = {'Dedicacion': 0, 'Dificultad': 'Alta', 'Horario': 'Nocturno',
-          'Humedad': 'Media', 'Humor Docente': 'Bueno'}
 
   attributes = ['A1_Score',
                 'A2_Score',
@@ -205,7 +185,9 @@ if __name__ == "__main__":
   print('Cross-Validation')
   print('')
 
+  print(len(data_set))
   data_set = utils.process_missing_values(data_set, attributes, False)
+  print(len(data_set))
 
   # Separamos el data set en dos subconjuntos
   print()
@@ -214,17 +196,19 @@ if __name__ == "__main__":
 
 
   # Primeros 9 ejemplos
-  first_ten_examples = data_set[:200]
+  first_ten_examples = data_set[0]
   # Decimo ejemplo
-  tenth_example = data_set[9]
+  tenth_example = data_set[1]
 
-  # Parte 1
-  print('Parte 1')
-  # Se realiza cross-validation de tamaño 10 sobre el 80% del conjunto original.
-  print('Se realiza 10-fold cross-validation')
-  cs = utils.cross_validation(splitted_data[1], attributes, 'Class/ASD', 10, True, 5, False)
+  distance(first_ten_examples,tenth_example, attributes, 'Class/ASD')
 
-  print('Promedio de errores: ', cs)
+  # # Parte 1
+  # print('Parte 1')
+  # # Se realiza cross-validation de tamaño 10 sobre el 80% del conjunto original.
+  # print('Se realiza 10-fold cross-validation')
+  # cs = utils.cross_validation(splitted_data[1], attributes, 'Class/ASD', 10, True, 5, False, False)
+
+  # print('Promedio de errores: ', cs)
 
 
   
@@ -233,4 +217,4 @@ if __name__ == "__main__":
   # data_set = utils.process_missing_values(data_set, attributes, True)
   # splitted_data = utils.split_20_80(data_set)
 
-  # print (validate(splitted_data[1][:100], splitted_data[0], 'Class/ASD'))
+  # print (validate(splitted_data[1][:100], splitted_data[0], 'Class/ASD', attributes))

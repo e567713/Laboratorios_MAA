@@ -101,7 +101,10 @@ def scale(data, attributes, use_standarization):
     # 'attributes' un array con los nombres de los atributos
     # si 'use_standarization' = true, normaliza usando media y varianza
     # si no, usa min-max
+    # Se retorna (data, scalation_params) siendo el último {att: (mean, std)}
+    # en caso de use_stand = true, o {att: (min, max)} en caso de use_stand = false
     numeric_attributes_values = {}
+    scalation_parameters = {}
     # Se recorre el data para extraer los valores de los distintos atributos numéricos
     for instance in data:
         for attribute in attributes:
@@ -115,17 +118,19 @@ def scale(data, attributes, use_standarization):
         values_np = np.asarray(values)
         if use_standarization:
             scaled = (values_np - values_np.mean()) / values_np.std()
+            scalation_parameters[att] = (values_np.mean(), values_np.std())
             i = -1
             for instance in data:
                 i += 1
                 instance[att] = scaled[i]
         else:
             scaled = (values_np - values_np.min()) / (values_np.max() - values_np.min())
+            scalation_parameters[att] = (values_np.min(), values_np.max())
             i = -1
             for instance in data:
                 i += 1
                 instance[att] = scaled[i]
-    return(data)
+    return(data, scalation_parameters)
 
 
 def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, nb_normalize):
@@ -147,14 +152,14 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
         # Se unen los restantes subconjuntos para formar el nuevo set de entrenamiento.
         training_set = np.concatenate(folds)
-        nb_classifier = NaiveBayes(training_set, attributes, target_attr)
+        if not applicate_KNN:
+            nb_classifier = NaiveBayes(training_set, attributes, target_attr)
 
         set_errors = []
         # Se entrena.
         for instance in validation_set:
             if applicate_KNN:
-                result = KNN.classify(instance, training_set, k, target_attr, weight)
-
+                result = KNN.classify(instance, training_set, k, target_attr, weight, attributes)
             else:
                 result = nb_classifier.classify(instance, nb_normalize)
 
@@ -173,9 +178,9 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
 def wrong_result(instance, result, target_attr):
     # retorna 1 si el atributo objetivo de la instancia es distinto a result
-    y = instance[target_attr]
-    x = y if isinstance(y, str) else y.decode()
-    return 1 if x != result else 0
+    x = instance[target_attr] if isinstance(instance[target_attr], str) else instance[target_attr].decode()
+    y = result if isinstance(result, str) else result.decode()
+    return 1 if x != y else 0
 
 def media(array):
     return (sum(array) / len(array))
