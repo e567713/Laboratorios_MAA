@@ -4,6 +4,7 @@ import copy
 import random
 from collections import Counter
 import numpy as np
+import KNN
 
 
 def read_file(path):
@@ -136,5 +137,52 @@ def scale(data, attributes, use_standarization):
     return(data)
 
 
+def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight):
+    # Implementación del algoritmo k-fold cross-validation
+    # Nota: Recordar que el conjunto data fue seleccionado al azar del conjunto
+    # inicial de datos.
+    # Si applicate_KNN = true, se aplica KNN con 'k' vecinos: si weight = true, se aplica con pesos
+    # Si applicate_KNN = false se aplica NB
+
+    # Se divide el conjunto de datos en k subconjuntos.
+    folds = np.array_split(data, k_fold)
+
+    # Lista para guardar los errores obtenidos en cada iteración del algoritmo.
+    errors = []
+
+    for i in range(k_fold):
+        # Se aparta el subconjunto i para validación.
+        validation_set = folds.pop(i)
+
+        # Se unen los restantes subconjuntos para formar el nuevo set de entrenamiento.
+        training_set = np.concatenate(folds)
+        
+        set_errors = []
+        # Se entrena.
+        for instance in validation_set:
+            if applicate_KNN:
+                result = KNN.classify(instance, training_set, k, target_attr, weight)
+
+                # Se verifica el resultado y se guarda el error cometido validado
+                set_errors.append(is_correct_result(instance, result, target_attr))
+            else:
+                # PONER ACA EL CLASIFICADOR DE BAYES, Y APENDEAR UN 1 EN set_errors 
+                # SI HAY ERROR, O UN 0 SI NO HAY ERROR
+                return
+
+        # Se guarda el promedio de errores del subconjunto i
+        errors.append(media(set_errors))
+
+        # Se devuelve el subconjunto i a la lista de folds.
+        folds.insert(i, validation_set)
+
+    return sum(errors) / k_fold
+
+
+def is_correct_result(instance, result, target_attr):
+    return 1 if instance[target_attr] == result else 0
+
+def media(array):
+    return (sum(array) / len(array))
 
 
