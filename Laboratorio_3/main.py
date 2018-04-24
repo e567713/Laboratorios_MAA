@@ -78,7 +78,6 @@ print()
 #Se clasifica la instancia con NaiveBayes
 
 # Entrena 
-decoded_data_set = utils.decode_set(data_set_theoric)
 nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_attr_theoric)
 
 # Clasifica
