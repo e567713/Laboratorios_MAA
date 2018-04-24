@@ -180,8 +180,11 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
         # Se devuelve el subconjunto i a la lista de folds.
         folds.insert(i, validation_set)
+    i=1
     for e in errors:
-        print(e)
+        print('Iteración ', i, ': ', e)
+        i+=1
+    print('Promedio de errores: ', sum(errors) / k_fold)
     return sum(errors) / k_fold
 
 

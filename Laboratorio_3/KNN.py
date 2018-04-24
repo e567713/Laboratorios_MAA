@@ -106,7 +106,7 @@ def find_most_common_function_value(data, target_attr, use_weight):
   return max_v
 
 
-def hold_out_validation(data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
+def holdout_validation(data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
   # retorna (len(validation_set), cantidad de errores, promedio de errores)
   errors = 0
   if normalize:
