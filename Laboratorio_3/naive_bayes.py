@@ -70,7 +70,7 @@ class NaiveBayes:
 			self.normalize_age_probabilities["variance"][b'YES'] += -self.normalize_age_probabilities["media"][b'YES']**2
 			self.normalize_age_probabilities["variance"][b'NO'] += -self.normalize_age_probabilities["media"][b'NO']**2
 
-	def classify(self, instance, normalize):
+	def classify(self, instance, normalize, m_estimate):
 	# Clasifica la instancia dada.
 
 		# En result[value] se almacenará  ∏i P(instance[i]|value).P(value)
@@ -96,8 +96,10 @@ class NaiveBayes:
 				elif instance[attr] in self.values_frecuency[attr]:
 
 					# Se multiplica la aproximación al valor que se viene calculando.
-					result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
-					# result[target_attr_value] *= self.values_frecuency[attr][instance[attr]][target_attr_value] / self.target_values_frecuency[target_attr_value]
+					if (m_estimate):
+						result[target_attr_value] *= self.m_estimate(instance, attr, target_attr_value)
+					else:
+						result[target_attr_value] *= self.values_frecuency[attr][instance[attr]][target_attr_value] / self.target_values_frecuency[target_attr_value]
 
 
 		# Se clasifica según el valor de target_attr con mayor probabilidad.

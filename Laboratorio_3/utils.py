@@ -133,7 +133,7 @@ def scale(data, attributes, use_standarization):
     return(data, scalation_parameters)
 
 
-def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, normalize, use_standarization):
+def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, normalize, m_estimate, use_standarization):
     # Implementación del algoritmo k-fold cross-validation
     # Nota: Recordar que el conjunto data fue seleccionado al azar del conjunto
     # inicial de datos.
@@ -169,7 +169,7 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
                     instance_copy = scale_instance(instance_copy, scalation_parameters, use_standarization)
                 result = KNN.classify(instance_copy, training_set, k, target_attr, weight, attributes)
             else:
-                result = nb_classifier.classify(instance, normalize)
+                result = nb_classifier.classify(instance, normalize, m_estimate)
 
 
             # Se verifica el resultado y se guarda el error cometido validado
