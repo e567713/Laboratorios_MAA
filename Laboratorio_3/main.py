@@ -85,7 +85,7 @@ nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_
 result_nb_theoric = nb_classifier_theoric.classify(instance2,False)
 
 print ("Naive Bayes clasifica la instancia como: ")
-print("\t",result_nb_theoric)
+print("\t",result_nb_theoric.decode())
 print ()
 
 # Se clasifica la instancia con ID3
