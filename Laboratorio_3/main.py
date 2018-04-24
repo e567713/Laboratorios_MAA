@@ -58,6 +58,10 @@ examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
 metadata = examples[1]  # Metadatos
 
+data = copy.deepcopy(data_set)
+# Se desordena el conjunto de datos y se parte 20-80
+splitted_data = utils.split_20_80(data)
+
 examples_theoric = utils.read_file('Theoric.arff')
 data_set_theoric = examples_theoric[0]  # Datos
 metadata_theoric = examples_theoric[1]  # Metadatos
@@ -118,65 +122,62 @@ print("-------------------------------------------------------------------------
 print()
 print('Parte C) 1.')
 print('Hay 8 variantes del algoritmo Naive Bayes')
-print('Se ejecutará 10-fold cross-validation para cada una')
+print('Se ejecutará 10-fold cross-validation para cada una utilizando 4/5 del conjunto brindado')
+print()
+
+#######################################################################################
+###########################            BAYES           ################################
+#######################################################################################
 
 
-# Se copia el conjunto de datos original para no alterarlo.
-data = copy.deepcopy(data_set)
-# Se ordenan aleatoriamente los ejemplos del conjunto para simular la
-# elección al azar de elementos para formar los subconjuntos.
-np.random.shuffle(data)
-
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
-# sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
-data1 = copy.deepcopy(data)
+print('1) Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,')
+print('sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.')
+data1 = copy.deepcopy(splitted_data[1])
 data1 = utils.process_missing_values(data1,attributes, True)
 result1 = utils.cross_validation(data1, attributes, target_attr, 10, False, None, None, False, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
-# sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
-data2 = copy.deepcopy(data)
+print('2) Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,')
+print('sin discretizar los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.')
+data2 = copy.deepcopy(splitted_data[1])
 data2 = utils.process_missing_values(data2,attributes, False)
 result2 = utils.cross_validation(data2, attributes, target_attr, 10, False, None, None, False, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
-# discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
-data3 = copy.deepcopy(data)
+print('3) Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,')
+print('discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.')
+data3 = copy.deepcopy(splitted_data[1])
 data3 = utils.process_missing_values(data3,attributes, True)
 data3 = utils.process_numeric_values_discretize(data3,attributes)
 result3 = utils.cross_validation(data3, attributes, target_attr, 10, False, None, None, False, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
-# discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.
-data4 = copy.deepcopy(data)
+print('4) Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,')
+print('discretizando los valores numéricos y sin calcular la probabilidad condicionada de valores numéricos como normal.')
+data4 = copy.deepcopy(splitted_data[1])
 data4 = utils.process_missing_values(data4,attributes, False)
 data4 = utils.process_numeric_values_discretize(data4,attributes)
 result4 = utils.cross_validation(data4, attributes, target_attr, 10, False, None, None, False, None)
 
-
-
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
-# sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
-data5 = copy.deepcopy(data)
+print('5) Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,')
+print('sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.')
+data5 = copy.deepcopy(splitted_data[1])
 data5 = utils.process_missing_values(data5,attributes, True)
 result5 = utils.cross_validation(data5, attributes, target_attr, 10, False, None, None, True, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
-# sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
-data6 = copy.deepcopy(data)
+print('6) Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,')
+print('sin discretizar los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.')
+data6 = copy.deepcopy(splitted_data[1])
 data6 = utils.process_missing_values(data6,attributes, False)
 result6 = utils.cross_validation(data6, attributes, target_attr, 10, False, None, None, True, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,
-# discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
-data7 = copy.deepcopy(data)
+print('7) Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,')
+print('discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.')
+data7 = copy.deepcopy(splitted_data[1])
 data7 = utils.process_missing_values(data7,attributes, True)
 data7 = utils.process_numeric_values_discretize(data7,attributes)
 result7 = utils.cross_validation(data7, attributes, target_attr, 10, False, None, None, True, None)
 
-# Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,
-# discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.
-data8 = copy.deepcopy(data)
+print('8) Se realiza una cross_validation con el algoritmo bayesiano sencillo eliminando la instancia con valores faltantes,')
+print('discretizando los valores numéricos y calculando la probabilidad condicionada de valores numéricos como normal.')
+data8 = copy.deepcopy(splitted_data[1])
 data8 = utils.process_missing_values(data8,attributes, False)
 data8 = utils.process_numeric_values_discretize(data8,attributes)
 result8 = utils.cross_validation(data8, attributes, target_attr, 10, False, None, None, True, None)
@@ -197,6 +198,11 @@ print ("result 7:", 1-result7)
 print ("result 8:", 1-result8)
 print("-------------------------------------------------------------------------------------")
 
+
+NB_results = [1 - result1, 1 - result2, 1 - result3, 1 - result4, 1 - result5, 1 - result6, 1 - result7, 1 - result8]
+
+# [most-common, discretize, normalize]
+NB_parameters = [[True, False, False], [False, False, False], [True, True, False], [False, True, False], [True, False, True], [False, False, True], [True, True, True], [False, True, True]]
 
 
 #######################################################################################
@@ -224,17 +230,9 @@ attributes = ['A1_Score',
                 'relation']
 
 
-examples = utils.read_file('Autism-Adult-Data.arff')
-data_set = examples[0]  # Datos
-metadata = examples[1]  # Metadatos
-
-data = copy.deepcopy(data_set)
-# Se desordena el conjunto de datos y se parte 20-80
-splitted_data = utils.split_20_80(data)
-
 print()
 print('Hay 24 variantes del algoritmo KNN')
-print('Se ejecutará 10-fold cross-validation para cada una')
+print('Se ejecutará 10-fold cross-validation para cada una utilizando 4/5 del conjunto brindado')
 print('Cada ejecución lleva su tiempo...')
 print()
 
@@ -522,14 +520,56 @@ print ("result 24:", 1-result24)
 print("-------------------------------------------------------------------------------------")
 
 
-results = [result1, result2, result3, result4, result5, result6, result7, result8, result9, 
-            result10, result11, result12, result13, result14, result15, result16, result17, 
-            result18, result19, result20, result21, result22, result23, result24]
+KNN_results = [1 - result1, 1 - result2, 1 - result3, 1 - result4, 1 - result5, 1 - result6, 1 - result7, 1 - result8, 1 - result9, 
+               1 - result10, 1 - result11, 1 - result12, 1 - result13, 1 - result14, 1 - result15, 1 - result16, 1 - result17, 
+               1 - result18, 1 - result19, 1 - result20, 1 - result21, 1 - result22, 1 - result23, 1 - result24]
 
-parameters = [[True, 1, True, True], [True, 1, True, False], [True, 1, False, True], [True, 1, False, False], [False, 1, True, True], [False, 1, True, False], [False, 1, False, True], [False, 1, False, False],
-              [True, 3, True, True], [True, 3, True, False], [True, 3, False, True], [True, 3, False, False], [False, 3, True, True], [False, 3, True, False], [False, 3, False, True], [False, 3, False, False],
-              [True, 7, True, True], [True, 7, True, False], [True, 7, False, True], [True, 7, False, False], [False, 7, True, True], [False, 7, True, False], [False, 7, False, True], [False, 7, False, False]]
+# [most-common, k, weight, normalize]
+KNN_parameters = [[True, 1, True, True], [True, 1, True, False], [True, 1, False, True], [True, 1, False, False], [False, 1, True, True], [False, 1, True, False], [False, 1, False, True], [False, 1, False, False],
+                  [True, 3, True, True], [True, 3, True, False], [True, 3, False, True], [True, 3, False, False], [False, 3, True, True], [False, 3, True, False], [False, 3, False, True], [False, 3, False, False],
+                  [True, 7, True, True], [True, 7, True, False], [True, 7, False, True], [True, 7, False, False], [False, 7, True, True], [False, 7, True, False], [False, 7, False, True], [False, 7, False, False]]
 
-# print("-------------------------------------------------------------------------------------")
-# print()
-# print('Parte C) 2.')
+print("-------------------------------------------------------------------------------------")
+print()
+print('Parte C) 2.')
+print()
+
+
+max_nb = max(NB_results)
+max_nb_index = NB_results.index(max_nb)
+parameters = NB_parameters[max_nb_index]
+
+print()
+print('La variante de NB implementada que dió mayor taza de acierto fue la número:', max_nb_index + 1)
+print('Se realiza la validación utilizando esa implementación utilizando el 1/5 restante del conjunto brindado')
+print()
+
+data_C2 = copy.deepcopy(splitted_data[0])
+data_C2 = utils.process_missing_values(data_C2,attributes, parameters[0])
+if (parameters[1]):
+    data_C2 = utils.process_numeric_values_discretize(data_C2,attributes)
+result_C2 = utils.cross_validation(data_C2, attributes, target_attr, 10, False, None, None, parameters[2], None)
+
+
+print("Tasa de aciertos de Naive Bayes para la parte C2")
+print("result C2:", 1-result_C2)
+print()
+
+
+max_knn = max(KNN_results)
+max_knn_index = KNN_results.index(max_knn)
+knn_parameters = KNN_parameters[max_knn_index]
+
+print()
+print('La variante de KNN implementada que dió mayor taza de acierto fue la número:', max_knn_index + 1)
+print('Se realiza la validación utilizando esa implementación utilizando el 1/5 restante del conjunto brindado')
+print()
+
+data_C2_knn = copy.deepcopy(splitted_data[0])
+data_C2_knn = utils.process_missing_values(data_C2_knn, attributes, knn_parameters[0])
+                    # cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, normalize, use_standarization)
+result_C2_knn = utils.cross_validation(data_C2_knn, attributes, 'Class/ASD', 10, True, knn_parameters[1], knn_parameters[2], True, knn_parameters[3])
+
+print("Tasa de aciertos de KNN para la parte C2")
+print("result C2:", 1-result_C2_knn)
+print()
