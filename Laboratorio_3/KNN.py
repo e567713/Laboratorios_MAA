@@ -106,10 +106,17 @@ def find_most_common_function_value(data, target_attr, use_weight):
   return max_v
 
 
-def hold_out_validation(data, validation_set, target_attr, attributes, k, weight):
+def hold_out_validation(data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
   # retorna (len(validation_set), cantidad de errores, promedio de errores)
   errors = 0
+  if normalize:
+    scale_values = utils.scale(data, attributes, use_standarization)
+    data = scale_values[0]
+    scalation_parameters = scale_values[1]
   for instance in validation_set:
-    if classify(instance, data, k, target_attr, weight, attributes) != instance[target_attr]:
+    instance_copy = copy.deepcopy(instance)
+    if normalize:
+      instance_copy = scale_instance(instance_copy, scalation_parameters, use_standarization)
+    if classify(instance_copy, data, k, target_attr, weight, attributes) != instance[target_attr]:
       errors += 1
   return (len(validation_set), errors, errors/len(validation_set))
