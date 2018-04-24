@@ -79,7 +79,7 @@ def process_numeric_values_discretize(data, attributes):
     return data
 
 
-def validate(validation_set , classifier, target_attr, normalize):
+def holdout_validation(validation_set, classifier, target_attr, use_normalize, use_m_estimate):
     # Realiza la validación del clasificador.
     
     if len(validation_set) == 0:
@@ -89,11 +89,11 @@ def validate(validation_set , classifier, target_attr, normalize):
     hits = 0
 
     for instance in validation_set:
-        if instance[target_attr].decode() != classifier.classify(instance, normalize):
+        if instance[target_attr] != classifier.classify(instance, use_normalize, use_m_estimate):
             errors += 1
         else:
             hits += 1
-    return hits / len(validation_set)
+    return (len(validation_set), errors, errors / len(validation_set))
 
 
 def scale(data, attributes, use_standarization):
@@ -180,7 +180,8 @@ def cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, we
 
         # Se devuelve el subconjunto i a la lista de folds.
         folds.insert(i, validation_set)
-
+    for e in errors:
+        print(e)
     return sum(errors) / k_fold
 
 

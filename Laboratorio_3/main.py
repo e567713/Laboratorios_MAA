@@ -120,14 +120,13 @@ print ()
 print("-------------------------------------------------------------------------------------")
 print()
 print('Parte C) 1.')
-print('Hay 8 variantes del algoritmo Naive Bayes')
+print('Hay 16 variantes del algoritmo Naive Bayes')
 print('Se ejecutará 10-fold cross-validation para cada una utilizando 4/5 del conjunto brindado')
 print()
 
 #######################################################################################
 ###########################            BAYES           ################################
 #######################################################################################
-
 
 print('1) Se realiza una cross_validation con el algoritmo bayesiano sencillo tomando los valores faltantes como más comunes,')
 print('sin discretizar, con m-estimate y sin calcular la probabilidad condicionada de valores numéricos como normal.')
@@ -605,18 +604,32 @@ parameters = NB_parameters[max_nb_index]
 
 print()
 print('La variante de NB implementada que dió mayor taza de acierto fue la número:', max_nb_index + 1)
-print('Se realiza la validación utilizando esa implementación utilizando el 1/5 restante del conjunto brindado')
+print('Se realiza la validación utilizando esa implementación')
 print()
 
-data_C2 = copy.deepcopy(splitted_data[0])
-data_C2 = utils.process_missing_values(data_C2,attributes, parameters[0])
+# Separamos el conjunto original en dos subconjuntos
+validation_set = copy.deepcopy(splitted_data[0])
+training_set = copy.deepcopy(splitted_data[1])
+
+# Se procesan los conjuntos según las características del mejor algortimo
+validation_set = utils.process_missing_values(validation_set,attributes, parameters[0])
+training_set = utils.process_missing_values(training_set,attributes, parameters[0])
 if (parameters[1]):
-    data_C2 = utils.process_numeric_values_discretize(data_C2,attributes)
-result_C2 = utils.cross_validation(data_C2, attributes, target_attr, 10, False, None, None, parameters[2], parameters[3], None)
+    validation_set = utils.process_numeric_values_discretize(validation_set,attributes)
+    training_set = utils.process_numeric_values_discretize(training_set,attributes)
+
+# Entrenamos NB con el 80% 
+nb = NaiveBayes(training_set, attributes, target_attr)
+
+# Validamos NB con Holdout validation con el 20% del conjunto original 
+result_C2 = utils.holdout_validation(validation_set, nb, target_attr, parameters[2], parameters[3])
+
 
 
 print("Tasa de aciertos de Naive Bayes para la parte C2")
-print("result C2:", 1-result_C2)
+print('Tamaño del conjunto de validación: ', result_C2[0])
+print('Cantidad de errores: ', result_C2[1])
+print('Promedio de errores: ', result_C2[2])
 print()
 
 
@@ -629,11 +642,19 @@ print('La variante de KNN implementada que dió mayor taza de acierto fue la nú
 print('Se realiza la validación utilizando esa implementación utilizando el 1/5 restante del conjunto brindado')
 print()
 
-data_C2_knn = copy.deepcopy(splitted_data[0])
-data_C2_knn = utils.process_missing_values(data_C2_knn, attributes, knn_parameters[0])
-                    # cross_validation(data, attributes, target_attr, k_fold, applicate_KNN, k, weight, normalize, use_standarization)
-result_C2_knn = utils.cross_validation(data_C2_knn, attributes, 'Class/ASD', 10, True, knn_parameters[1], knn_parameters[2], True, None, knn_parameters[3])
+# Separamos el conjunto original en dos subconjuntos
+validation_set = copy.deepcopy(splitted_data[0])
+training_set = copy.deepcopy(splitted_data[1])
 
-print("Tasa de aciertos de KNN para la parte C2")
-print("result C2:", 1-result_C2_knn)
+# Se procesan los conjuntos
+validation_set = utils.process_missing_values(validation_set, attributes, knn_parameters[0])
+training_set = utils.process_missing_values(training_set, attributes, knn_parameters[0])
+
+
+result_C2_knn = knn.hold_out_validation()
+
+print("Tasa de aciertos de Naive Bayes para la parte C2")
+print('Tamaño del conjunto de validación: ', result_C2_knn[0])
+print('Cantidad de errores: ', result_C2_knn[1])
+print('Promedio de errores: ', result_C2_knn[2])
 print()
