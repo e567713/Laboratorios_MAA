@@ -2,6 +2,7 @@
 import utils
 import id3
 from naive_bayes import NaiveBayes
+import KNN
 import copy
 import numpy as np
 
@@ -81,10 +82,6 @@ metadata_theoric = examples_theoric[1]  # Metadatos
 
 instance = {'Tiempo': 'Soleado', 'Temperatura': 'Frio', 'Humedad': 'Alta','Viento': 'Fuerte'}
 instance2 = {'Tiempo': b'Soleado', 'Temperatura': b'Frio', 'Humedad': b'Alta','Viento': b'Fuerte'}
-print ()
-print ('Parte A)' )
-print("Para el ejemplo del teórico se clasifica la instancia <Soleado, Frio, Alta, Fuerte>")
-print ("Naive Bayes clasifica la instancia como: ")
 
 # Se copia el conjunto de datos original para no alterarlo.
 data_theoric = copy.deepcopy(data_set_theoric)
@@ -92,11 +89,30 @@ data_theoric = copy.deepcopy(data_set_theoric)
 #Se clasifica la instancia con NaiveBayes
 nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_attr_theoric)
 result_nb_theoric = nb_classifier_theoric.classify(instance,False)
+
+#Se clasifica la instancia con ID3
+tree = id3.ID3_algorithm(data_theoric, attributes_theoric, 'Juega', True, False)
+result_id3_theoric =id3.validate_instance_extended(tree, instance2, b'Juega').decode()
+
+#Se clasifica la instancia con KNN
+result_knn_1_theoric = KNN.classify(instance, data_theoric, 1, 'Juega', True, attributes_theoric).decode()
+result_knn_3_theoric = KNN.classify(instance, data_theoric, 3, 'Juega', True, attributes_theoric).decode()
+result_knn_7_theoric = KNN.classify(instance, data_theoric, 7, 'Juega', True, attributes_theoric).decode()
+
+
+print ()
+print ('Parte A)' )
+print("Para el ejemplo del teórico se clasifica la instancia <Soleado, Frio, Alta, Fuerte>")
+print ("Naive Bayes clasifica la instancia como: ")
 print("\t",result_nb_theoric)
 print ()
 print ("ID3 clasifica la instancia como: ")
-tree = id3.ID3_algorithm(data_theoric, attributes_theoric, 'Juega', True, False)
-print("\t",id3.validate_instance_extended(tree, instance2, b'Juega').decode())
+print("\t",result_id3_theoric)
+print ()
+print ("KNN clasifica la instancia como: ")
+print('k = 1 ---> ',result_knn_1_theoric)
+print('k = 3 ---> ',result_knn_3_theoric)
+print('k = 7 ---> ',result_knn_7_theoric)
 print ()
 
 
