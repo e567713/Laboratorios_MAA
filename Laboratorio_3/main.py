@@ -7,18 +7,6 @@ import copy
 import numpy as np
 
 
-# Data set del teórico
-S = [
-    {'Dedicacion': 'Alta', 'Dificultad': 'Alta', 'Horario': 'Nocturno',
-        'Humedad': 'Media', 'Humor Docente': 'Bueno', 'Salva': 'Yes'},
-    {'Dedicacion': 'Baja', 'Dificultad': 'Media', 'Horario': 'Matutino',
-        'Humedad': 'Alta', 'Humor Docente': 'Malo', 'Salva': 'No'},
-    {'Dedicacion': 'Media', 'Dificultad': 'Alta', 'Horario': 'Nocturno',
-        'Humedad': 'Media', 'Humor Docente': 'Malo', 'Salva': 'Yes'},
-    {'Dedicacion': 'Media', 'Dificultad': 'Alta', 'Horario': 'Matutino',
-        'Humedad': 'Alta', 'Humor Docente': 'Bueno', 'Salva': 'No'},
-]
-
 # Atributos del ejemplo teórico a tener en cuenta
 target_attr_theoric = 'Juega'
 attributes_theoric = ['Tiempo',
@@ -62,9 +50,12 @@ data = copy.deepcopy(data_set)
 # Se desordena el conjunto de datos y se parte 20-80
 splitted_data = utils.split_20_80(data)
 
+# Leemos data set del teórico
 examples_theoric = utils.read_file('Theoric.arff')
-data_set_theoric = examples_theoric[0]  # Datos
+data_set_theoric = copy.deepcopy(examples_theoric[0])  # Datos
 metadata_theoric = examples_theoric[1]  # Metadatos
+
+
 # Se procesan los valores faltantes
 # utils.process_missing_values(data_set,attributes, True)
 
@@ -83,40 +74,49 @@ metadata_theoric = examples_theoric[1]  # Metadatos
 
 instance = {'Tiempo': 'Soleado', 'Temperatura': 'Frio', 'Humedad': 'Alta','Viento': 'Fuerte'}
 instance2 = {'Tiempo': b'Soleado', 'Temperatura': b'Frio', 'Humedad': b'Alta','Viento': b'Fuerte'}
-
-# Se copia el conjunto de datos original para no alterarlo.
-data_theoric = copy.deepcopy(data_set_theoric)
-
-#Se clasifica la instancia con NaiveBayes
-nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_attr_theoric)
-result_nb_theoric = nb_classifier_theoric.classify(instance,False)
-
-#Se clasifica la instancia con ID3
-tree = id3.ID3_algorithm(data_theoric, attributes_theoric, 'Juega', True, False)
-result_id3_theoric =id3.validate_instance_extended(tree, instance2, b'Juega').decode()
-
-#Se clasifica la instancia con KNN
-result_knn_1_theoric = KNN.classify(instance, data_theoric, 1, 'Juega', True, attributes_theoric).decode()
-result_knn_3_theoric = KNN.classify(instance, data_theoric, 3, 'Juega', True, attributes_theoric).decode()
-result_knn_7_theoric = KNN.classify(instance, data_theoric, 7, 'Juega', True, attributes_theoric).decode()
-
-
 print ()
 print ('Parte A)' )
 print("Para el ejemplo del teórico se clasifica la instancia <Soleado, Frio, Alta, Fuerte>")
+print()
+print()
+
+#Se clasifica la instancia con NaiveBayes
+
+# Entrena 
+decoded_data_set = utils.decode_set(data_set_theoric)
+nb_classifier_theoric = NaiveBayes(data_set_theoric, attributes_theoric, target_attr_theoric)
+
+# Clasifica
+result_nb_theoric = nb_classifier_theoric.classify(instance2,False)
+
 print ("Naive Bayes clasifica la instancia como: ")
-print("\t",result_nb_theoric)
+print("\t",result_nb_theoric.decode())
 print ()
+
+# Se clasifica la instancia con ID3
+
+# Entrena
+tree = id3.ID3_algorithm(data_set_theoric, attributes_theoric, 'Juega', True, False)
+
+# Clasifica
+result_id3_theoric = id3.validate_instance_extended(tree, instance2, b'Juega').decode()
+
 print ("ID3 clasifica la instancia como: ")
 print("\t",result_id3_theoric)
 print ()
+
+# Se clasifica la instancia con KNN
+
+# Clasifica
+result_knn_1_theoric = KNN.classify(instance, data_set_theoric, 1, 'Juega', True, attributes_theoric).decode()
+result_knn_3_theoric = KNN.classify(instance, data_set_theoric, 3, 'Juega', True, attributes_theoric).decode()
+result_knn_7_theoric = KNN.classify(instance, data_set_theoric, 7, 'Juega', True, attributes_theoric).decode()
+
 print ("KNN clasifica la instancia como: ")
 print('k = 1 ---> ',result_knn_1_theoric)
 print('k = 3 ---> ',result_knn_3_theoric)
 print('k = 7 ---> ',result_knn_7_theoric)
 print ()
-
-
 
 print("-------------------------------------------------------------------------------------")
 print()

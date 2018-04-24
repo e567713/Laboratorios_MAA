@@ -203,3 +203,9 @@ def scale_instance(instance, scalation_parameters, use_standarization):
             instance[att] = (instance[att] - mean_or_min) / (std_or_max - mean_or_min)
     return instance
 
+def decode_set(data):
+    result = copy.deepcopy(data)
+    for i in range(result.size):
+        for j in range(data[i].size):
+            if(isinstance(data[i][j], np.bytes_)):
+                result[i][j] = data[i][j].decode()
