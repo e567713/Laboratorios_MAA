@@ -331,7 +331,6 @@ def cross_validation(data, attributes, target_attr, k):
 
     # Lista para guardar los errores obtenidos en cada iteración del algoritmo.
     errors = []
-    # Se abre el archivo para guardar los resultados
 
     for i in range(k):
         # Se aparta el subconjunto i para validación.
@@ -349,7 +348,11 @@ def cross_validation(data, attributes, target_attr, k):
 
         # Se devuelve el subconjunto i a la lista de folds.
         folds.insert(i, validation_set)
-
+    i=1
+    for e in errors:
+        print('Iteración ', i, ': ', e)
+        i+=1
+    print('Promedio de errores: ', sum(errors) / k)
     return sum(errors) / k
 
 

@@ -57,20 +57,20 @@ metadata_theoric = examples_theoric[1]  # Metadatos
 
 
 # Se procesan los valores faltantes
-# utils.process_missing_values(data_set,attributes, True)
+utils.process_missing_values(data_set,attributes, True)
 
 
 # Separamos el data set en dos subconjuntos
-# splitted_data = utils.split_20_80(data_set)
-#
-# validation_set = splitted_data[0]
-# training_set = splitted_data[1]
-#
+splitted_data = utils.split_20_80(data_set)
+
+validation_set = splitted_data[0]
+training_set = splitted_data[1]
 
 
-#######################################################################################
-###########################           Parte 1          ################################
-#######################################################################################
+
+######################################################################################
+##########################           Parte 1          ################################
+######################################################################################
 
 instance = {'Tiempo': 'Soleado', 'Temperatura': 'Frio', 'Humedad': 'Alta','Viento': 'Fuerte'}
 instance2 = {'Tiempo': b'Soleado', 'Temperatura': b'Frio', 'Humedad': b'Alta','Viento': b'Fuerte'}
@@ -658,3 +658,29 @@ print('Tamaño del conjunto de validación: ', result_C2_knn[0])
 print('Cantidad de errores: ', result_C2_knn[1])
 print('Promedio de errores: ', result_C2_knn[2])
 print()
+
+
+print()
+print('Validacion con ID3')
+print()
+
+# Separamos el conjunto original en dos subconjuntos
+validation_set = copy.deepcopy(splitted_data[0])
+training_set = copy.deepcopy(splitted_data[1])
+
+# Se procesan los conjuntos
+validation_set = utils.process_missing_values(validation_set, attributes, True)
+training_set = utils.process_missing_values(training_set, attributes, True)
+
+tree = id3.ID3_algorithm(training_set, attributes, target_attr, True, False)
+
+print()
+print('ID3 - Validación Cross-Validation')
+# Validación con cross validation
+print(id3.cross_validation(training_set, attributes, target_attr, 10))
+print()
+
+print()
+print('ID3 - Validación con Holdout Validation')
+# Validación con holdout validation
+print(id3.validation(tree, validation_set, target_attr))
