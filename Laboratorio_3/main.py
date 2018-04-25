@@ -56,18 +56,6 @@ data_set_theoric = copy.deepcopy(examples_theoric[0])  # Datos
 metadata_theoric = examples_theoric[1]  # Metadatos
 
 
-# Se procesan los valores faltantes
-# utils.process_missing_values(data_set,attributes, True)
-
-
-# Separamos el data set en dos subconjuntos
-# splitted_data = utils.split_20_80(data_set)
-#
-# validation_set = splitted_data[0]
-# training_set = splitted_data[1]
-#
-
-
 #######################################################################################
 ###########################           Parte 1          ################################
 #######################################################################################
@@ -237,23 +225,23 @@ print("-------------------------------------------------------------------------
 print("Naive Bayes")
 print()
 # print("Tasa de aciertos sobre un conjunto de validación con", len(validation_set), "ejemplos:")
-print("Tasa de aciertos sobre un conjunto de validación:")
-print ("result 1:", 1-result1)
-print ("result 2:", 1-result2)
-print ("result 3:", 1-result3)
-print ("result 4:", 1-result4)
-print ("result 5:", 1-result5)
-print ("result 6:", 1-result6)
-print ("result 7:", 1-result7)
-print ("result 8:", 1-result8)
-print ("result 9:", 1-result9)
-print ("result 10:", 1-result10)
-print ("result 11:", 1-result11)
-print ("result 12:", 1-result12)
-print ("result 13:", 1-result13)
-print ("result 14:", 1-result14)
-print ("result 15:", 1-result15)
-print ("result 16:", 1-result16)
+print("Tasa de errores sobre un conjunto de validación:")
+print ("result 1:", result1)
+print ("result 2:", result2)
+print ("result 3:", result3)
+print ("result 4:", result4)
+print ("result 5:", result5)
+print ("result 6:", result6)
+print ("result 7:", result7)
+print ("result 8:", result8)
+print ("result 9:", result9)
+print ("result 10:", result10)
+print ("result 11:", result11)
+print ("result 12:", result12)
+print ("result 13:", result13)
+print ("result 14:", result14)
+print ("result 15:", result15)
+print ("result 16:", result16)
 print("-------------------------------------------------------------------------------------")
 
 
@@ -271,26 +259,6 @@ NB_parameters = [[True, False, False, True], [False, False, False, True], [True,
 #######################################################################################
 ###########################             KNN            ################################
 #######################################################################################
-
-attributes = ['A1_Score',
-                'A2_Score',
-                'A3_Score',
-                'A4_Score',
-                'A5_Score',
-                'A6_Score',
-                'A7_Score',
-                'A8_Score',
-                'A9_Score',
-                'A10_Score',
-                'age',
-                'gender',
-                'ethnicity',
-                'jundice',
-                'austim',
-                'contry_of_res',
-                'used_app_before',
-                'age_desc',
-                'relation']
 
 
 print()
@@ -555,31 +523,31 @@ result24 = utils.cross_validation(data24, attributes, 'Class/ASD', 10, True, 7, 
 print("-------------------------------------------------------------------------------------")
 print("KNN")
 print()
-print("Tasa de aciertos sobre un conjunto de validación:")
-print ("result 1:", 1-result1)
-print ("result 2:", 1-result2)
-print ("result 3:", 1-result3)
-print ("result 4:", 1-result4)
-print ("result 5:", 1-result5)
-print ("result 6:", 1-result6)
-print ("result 7:", 1-result7)
-print ("result 8:", 1-result8)
-print ("result 9:", 1-result9)
-print ("result 10:", 1-result10)
-print ("result 11:", 1-result11)
-print ("result 12:", 1-result12)
-print ("result 13:", 1-result13)
-print ("result 14:", 1-result14)
-print ("result 15:", 1-result15)
-print ("result 16:", 1-result16)
-print ("result 17:", 1-result17)
-print ("result 18:", 1-result18)
-print ("result 19:", 1-result19)
-print ("result 20:", 1-result20)
-print ("result 21:", 1-result21)
-print ("result 22:", 1-result22)
-print ("result 23:", 1-result23)
-print ("result 24:", 1-result24)
+print("Tasa de errores sobre un conjunto de validación:")
+print ("result 1:", result1)
+print ("result 2:", result2)
+print ("result 3:", result3)
+print ("result 4:", result4)
+print ("result 5:", result5)
+print ("result 6:", result6)
+print ("result 7:", result7)
+print ("result 8:", result8)
+print ("result 9:", result9)
+print ("result 10:", result10)
+print ("result 11:", result11)
+print ("result 12:", result12)
+print ("result 13:", result13)
+print ("result 14:", result14)
+print ("result 15:", result15)
+print ("result 16:", result16)
+print ("result 17:", result17)
+print ("result 18:", result18)
+print ("result 19:", result19)
+print ("result 20:", result20)
+print ("result 21:", result21)
+print ("result 22:", result22)
+print ("result 23:", result23)
+print ("result 24:", result24)
 print("-------------------------------------------------------------------------------------")
 
 
@@ -603,7 +571,7 @@ max_nb_index = NB_results.index(max_nb)
 parameters = NB_parameters[max_nb_index]
 
 print()
-print('La variante de NB implementada que dió mayor taza de acierto fue la número:', max_nb_index + 1)
+print('La variante de NB implementada que dió menor tasa de errores fue la número:', max_nb_index + 1)
 print('Se realiza la validación utilizando esa implementación')
 print()
 
@@ -626,7 +594,7 @@ result_C2 = utils.holdout_validation(validation_set, nb, target_attr, parameters
 
 
 
-print("Tasa de aciertos de Naive Bayes para la parte C2")
+print("Tasa de errores de Naive Bayes para la parte C2")
 print('Tamaño del conjunto de validación: ', result_C2[0])
 print('Cantidad de errores: ', result_C2[1])
 print('Promedio de errores: ', result_C2[2])
@@ -638,7 +606,7 @@ max_knn_index = KNN_results.index(max_knn)
 knn_parameters = KNN_parameters[max_knn_index]
 
 print()
-print('La variante de KNN implementada que dió mayor taza de acierto fue la número:', max_knn_index + 1)
+print('La variante de KNN implementada que dió menor tasa de errores fue la número:', max_knn_index + 1)
 print('Se realiza la validación utilizando esa implementación utilizando el 1/5 restante del conjunto brindado')
 print()
 
@@ -653,7 +621,7 @@ training_set = utils.process_missing_values(training_set, attributes, knn_parame
 
 result_C2_knn = KNN.holdout_validation(training_set, validation_set, target_attr, attributes, knn_parameters[1], knn_parameters[2], True, knn_parameters[3])
 
-print("Tasa de aciertos de KNN para la parte C2")
+print("Tasa de errores de KNN para la parte C2")
 print('Tamaño del conjunto de validación: ', result_C2_knn[0])
 print('Cantidad de errores: ', result_C2_knn[1])
 print('Promedio de errores: ', result_C2_knn[2])
