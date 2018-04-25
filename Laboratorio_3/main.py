@@ -651,9 +651,9 @@ validation_set = utils.process_missing_values(validation_set, attributes, knn_pa
 training_set = utils.process_missing_values(training_set, attributes, knn_parameters[0])
 
 
-result_C2_knn = knn.holdout_validation()
+result_C2_knn = KNN.holdout_validation(training_set, validation_set, target_attr, attributes, knn_parameters[1], knn_parameters[2], True, knn_parameters[3])
 
-print("Tasa de aciertos de Naive Bayes para la parte C2")
+print("Tasa de aciertos de KNN para la parte C2")
 print('Tamaño del conjunto de validación: ', result_C2_knn[0])
 print('Cantidad de errores: ', result_C2_knn[1])
 print('Promedio de errores: ', result_C2_knn[2])

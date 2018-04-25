@@ -116,7 +116,7 @@ def holdout_validation(data, validation_set, target_attr, attributes, k, weight,
   for instance in validation_set:
     instance_copy = copy.deepcopy(instance)
     if normalize:
-      instance_copy = scale_instance(instance_copy, scalation_parameters, use_standarization)
+      instance_copy = utils.scale_instance(instance_copy, scalation_parameters, use_standarization)
     if classify(instance_copy, data, k, target_attr, weight, attributes) != instance[target_attr]:
       errors += 1
   return (len(validation_set), errors, errors/len(validation_set))
