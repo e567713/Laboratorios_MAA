@@ -13,15 +13,17 @@ class AnomaliesDetection:
         #     fields = line.split('|')
         #     for i in range(3):
         #         self.values_frecuency[i].append(fields[i])
+
         df=pd.read_csv(name,sep='|',names=['Id','Date','Message'])
         tweet = df['Message']
+        # print(df)
         cv = CountVectorizer()
-        x_traincv = cv.fit_transform(tweet)
+        x_traincvMatrix = cv.fit_transform(tweet)
 
-        # print(x_traincv.toarray())
-        # print(cv.get_feature_names())
-        #
-        # print()
+        print(x_traincvMatrix.toarray())
+        print(cv.get_feature_names())
+
+        print()
         cv1 = CountVectorizer()
         x_traincv=cv1.fit_transform(tweet)
         a=x_traincv.toarray()
