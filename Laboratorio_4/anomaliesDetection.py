@@ -1,7 +1,9 @@
 import math
 import numpy as np
+import scipy.stats as st
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 # from sklearn.cross_validation import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 
@@ -15,35 +17,62 @@ class AnomaliesDetection:
         #         self.values_frecuency[i].append(fields[i])
 
         df=pd.read_csv(name,sep='|',names=['Id','Date','Message'])
+
+        #tweet es la columna de mensajes
         tweet = df['Message']
-        # print(df)
-        cv = CountVectorizer()
-        x_traincvMatrix = cv.fit_transform(tweet)
 
-        print(x_traincvMatrix.toarray())
-        print(cv.get_feature_names())
+        #inicializo el CountVectorize quitando las stopword
+        # cv = CountVectorizer(stop_words='english')
 
-        print()
-        cv1 = CountVectorizer()
-        x_traincv=cv1.fit_transform(tweet)
-        a=x_traincv.toarray()
-        # cv1.inverse_transform(a[0])
+        #creo matriz de palabras y tweets
+        # x_traincvMatrix = cv.fit_transform(tweet)
+
+        # print(x_traincvMatrix.toarray()[0])
+        # print(2)
+
+        # cv.inverse_transform(x_traincvMatrix.toarray()[0])
+        # print(3)
+        #
         # print(tweet.iloc[0])
+        # print(4)
 
-        cv2 = TfidfVectorizer(min_df=1, stop_words='english')
-
-        # tweet2= ['Hola','Chau','Hola Chau adios bebe','Hello']
-        x_traincv2 = cv2.fit_transform(["Hi How are you How are you doing blue","Hi blue blue blue blue what's up","Wow that's awesome"])
-        # x_traincv2 = cv2.fit_transform(tweet2)
-        print(cv2.get_feature_names())
-        print(x_traincv2.toarray())
+        # print(x_traincvMatrix.toarray()[0])
+        # cv = TfidfVectorizer(min_df=1, stop_words='english')
 
 
+        #defino df['largo'] como el largo de los mensajes
+        # df['largo'] = df['Message'].apply(len)
 
-        df['length'] = df['Message'].apply(len)
-        print(df['length'].describe())
-        print(df[df['length'] == 58]['Message'].iloc[0])
+        #imprime caracteristicas
+        # print(df['largo'].describe())
 
-    def normal_probability(self, value, media , variance):
+        #obtiene los de largo 58
+        # print(df[df['largo'] == 58]['Message'].iloc[0])
+
+
+        def removeLinks(s):
+            return s.upper()
+
+        cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
+        matrix = cv.fit_transform(tweet)
+        print(cv.vocabulary_)
+        print("-------")
+        print(matrix.toarray())
+        print(cv.get_feature_names())
+        print("--------")
+
+        print(cv.transform(['Something papel new.']).toarray())
+        print(cv.vocabulary_.get('papel'))
+
+        transformer = TfidfTransformer(smooth_idf=False)
+        tfidf = transformer.fit_transform(matrix.toarray())
+        print( tfidf.toarray() )
+        # mean = 0
+        # std_dev = 1
+        # dist = st.norm(loc=mean,scale=std_dev)
+        # print(matrix[0])
+        # dist.pdf(matrix[0])
+
+def normal_probability(self, value, media , variance):
         return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
 
