@@ -1,3 +1,4 @@
+
 from scipy.io import arff
 import numpy as np
 from collections import Counter
@@ -5,6 +6,7 @@ import copy
 
 def read_file(path):
     return arff.loadarff(path)
+
 
 
 def decode_data (data):
@@ -55,6 +57,7 @@ def found_most_common_attribute_value(data, attribute):
     values = [instance[attribute] for instance in data if not (isinstance(instance[attribute], np.float64) and np.isnan(instance[attribute])) or (isinstance(instance[attribute], np.bytes_) and instance[attribute] == b'?')]
     data = Counter(values)
     return max(values, key=data.get)
+
 
 
 def split_20_80(d):
