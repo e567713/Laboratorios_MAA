@@ -10,6 +10,8 @@ import KNN
 
 def PCA(data, attributes, numeric_atts, cant_vectors, percentage):
   # cant_vectors es la cantidad de vectores que vamos a tomar en cuenta para achicar el data
+  # o si cant_vectors es null, se usa una cantidad tal que cumpla que el porcentage
+  # de variabilidad de los datos sea mayor igual a percentage
   # Se recorre el data para extraer como array los valores de los distintos atributos numéricos
   data = copy.deepcopy(data)
   numeric_attributes_values = {}
@@ -307,7 +309,62 @@ def extract_target_attributes(data):
 
 def insert_target_attributes(data, target_attr, target_attributes):
   for i in range(len(data)):
-    data[i][target_attr] = target_attributes[i]  
+    data[i][target_attr] = target_attributes[i]
+
+def KNN_holdout(data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, normalize, use_standarization):
+
+  # CONJUNTO DE ENTRENAMIENTO 
+  training_data, target_attributes1 = extract_target_attributes(data_80)
+
+  all_numeric_data1 = one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+
+  new_attributes = list(all_numeric_data1[0].keys())
+  numeric_atts_len = len(new_attributes)
+  # print(new_attributes)
+
+  PC_training_data, row_eigen_vectors, original_means = PCA(all_numeric_data1, new_attributes, new_attributes, PCA_cant_vectors, PCA_percentage)
+
+  PC_attributes = list(PC_training_data[0].keys())
+
+  # METO EL TARGET ATTRIBUTE
+  insert_target_attributes(PC_training_data, target_attr, target_attributes1)
+
+  # FINAL_DATA TIENE LA DATA DESP DE HACER PCA
+  # print(PC_training_data)
+
+
+  
+  validation_data, target_attributes2 = extract_target_attributes(data_20)
+  all_numeric_data2 = one_hot_encoding(validation_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+  # INSTANCIAS A CLASIFICAR
+  # print()
+  # print(final_training_data)
+  # print()
+  # print(instance)
+
+  new_attributes2 = list(all_numeric_data2[0].keys())
+  numeric_atts_len2 = len(new_attributes2)
+
+  # RESTO LA MEDIA A CADA ATRIBUTO
+  row_data = transpose_and_format_data(all_numeric_data2, numeric_atts_len)
+  for i in range(len(row_data)):
+    for j in range (len(row_data[0])):
+      row_data[i][j] -= original_means[i]
+
+  # print()
+  # print(len(row_data[0]))
+
+  matrix_T = multiply_matrix(row_eigen_vectors, row_data)
+  matrix = undo_transpose(matrix_T)
+
+
+  PC_validation_data = format_PC_data(matrix)
+
+  # METO EL TARGET ATTRIBUTE
+  insert_target_attributes(PC_validation_data, target_attr, target_attributes2)
+
+  
+  return KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, k, weight, normalize, use_standarization)
 
 if __name__ == "__main__":
   examples = utils.read_file('Autism-Adult-Data.arff')
@@ -365,60 +422,9 @@ if __name__ == "__main__":
   # Se divide el conjunto de datos
   data_20, data_80 = utils.split_20_80(data)
 
-
-  # CONJUNTO DE ENTRENAMIENTO 
-  data1, target_attributes1 = extract_target_attributes(data[:20])
-
-  all_numeric_data1 = one_hot_encoding(data1, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
-
-  new_attributes = list(all_numeric_data1[0].keys())
-  numeric_atts_len = len(new_attributes)
-  # print(new_attributes)
-
-  final_training_data, row_eigen_vectors, original_means = PCA(all_numeric_data1, new_attributes, new_attributes, None, 95)
-
-  PC_attributes = list(final_training_data[0].keys())
-
-  # METO EL TARGET ATTRIBUTE
-  insert_target_attributes(final_training_data, target_attr, target_attributes1)
-
-  # FINAL_DATA TIENE LA DATA DESP DE HACER PCA
-  # print(final_training_data)
-
-
-  # INSTANCIA A CLASIFICAR
-  data2, target_attributes2 = extract_target_attributes([data[20]])
-  all_numeric_data2 = one_hot_encoding(data2, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
-  instance = all_numeric_data2[0]
-  print()
-  print(final_training_data)
-  # print()
-  # print(instance)
-
-  # RESTO LA MEDIA A CADA ATRIBUTO
-  row_data = transpose_and_format_data(all_numeric_data2, numeric_atts_len)
-  for i in range(len(row_data)):
-    row_data[i][0] -= original_means[i]
-
-  # print()
-  # print(row_data)
-
-  matrix_T = multiply_matrix(row_eigen_vectors, row_data)
-  matrix = undo_transpose(matrix_T)
-
-
-  PC_instance = format_PC_data(matrix)
-
-  # METO EL TARGET ATTRIBUTE
-  insert_target_attributes(PC_instance, target_attr, target_attributes2)
-
-  PC_instance = PC_instance[0]
-  print()
-  print(PC_instance)
-
-  result = KNN.classify(PC_instance, final_training_data, 7, target_attr, True, PC_attributes)
-
-  print(result)
+                                  # (data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, normalize, use_standarization):
+  validation_set_len, cant_errors, errors_media = KNN_holdout(data_20, data_80, None, 95, 3, True, True, True)
+  print(cant_errors)
 
 
 
