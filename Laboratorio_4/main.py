@@ -1,20 +1,63 @@
-from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-
 import utils
-from anomaliesDetection import AnomaliesDetection
 import math
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from anomaliesDetection import AnomaliesDetection
 from naive_bayes import NaiveBayes
 
 
-def normal_probability(self, value, media , variance):
-    return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
+##################################################################### 
+######################### Constantes ################################
+##################################################################### 
 
-name = 'bbchealth.txt'
-anomalyDetector = AnomaliesDetection(name)
-# print(anomalyDetector)
+file_names = 'bbchealth.txt' 
+
+
+##################################################################### 
+################# Importamos el conjunto de tweets ##################
+##################################################################### 
+
+df=pd.read_csv(file_names,sep='|',names=['Id','Date','Message'])
+
+#tweet es la columna de mensajes
+tweet = df['Message']
+
+cv = CountVectorizer(stop_words='english', preprocessor=utils.preprocess_tweets)
+matrix = cv.fit_transform(tweet).toarray()
+print(cv.vocabulary_)
+print("-------")
+print(matrix)
+print(cv.get_feature_names())
+print("--------")
+
+
+
+##################################################################### 
+######################### Ejercicio 3 ###############################
+##################################################################### 
+
+
+
+# Calculamos media y varianza de cada feature
+means = []
+variances = []
+for column in range(matrix.shape[1]):
+	means.append(np.mean(matrix[:,column]))
+	variances.append(np.var(matrix[:,column]))
+
+instance = cv.transform(["Ernesto Fernandez Ferreyra"]).toarray()[0]
+
+print(instance)
+
+prob = 1
+for column in range(len(instance)):
+	print(means[column])
+	print(variances[column])
+	prob *= utils.normal_probability(instance[column], means[column], variances[column])
+
+print(prob)
+# anomalyDetector = AnomaliesDetection(file_names)
 
 
 
@@ -33,26 +76,19 @@ anomalyDetector = AnomaliesDetection(name)
 # for instance in data_set:
 #     print(nb_classifier_theoric.classify(instance))
 
-df=pd.read_csv(name,sep='|',names=['Id','Date','Message'])
-
-#tweet es la columna de mensajes
-tweet = df['Message']
 
 
-def removeLinks(s):
-    return s.upper()
+# cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
+# matrix = cv.fit_transform(tweet)
+# print(cv.vocabulary_)
+# print("-------")
+# print(matrix.toarray())
+# print(cv.get_feature_names())
+# print("--------")
 
-cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
-matrix = cv.fit_transform(tweet)
-print(cv.vocabulary_)
-print("-------")
-print(matrix.toarray())
-print(cv.get_feature_names())
-print("--------")
+# print(cv.transform(['Something papel new.']).toarray())
+# print(cv.vocabulary_.get('papel'))
 
-print(cv.transform(['Something papel new.']).toarray())
-print(cv.vocabulary_.get('papel'))
-
-transformer = TfidfTransformer(smooth_idf=False)
-tfidf = transformer.fit_transform(matrix.toarray())
-print( tfidf.toarray() )
+# transformer = TfidfTransformer(smooth_idf=False)
+# tfidf = transformer.fit_transform(matrix.toarray())
+# print( tfidf.toarray() )

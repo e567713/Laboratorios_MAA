@@ -1,8 +1,10 @@
 
+import re
 from scipy.io import arff
 import numpy as np
 from collections import Counter
 import copy
+import math
 
 def read_file(path):
     return arff.loadarff(path)
@@ -142,3 +144,12 @@ def set_numeric_attribute_values(data, numeric_attr, threshold):
             instance[numeric_attr] = 0
 
     return data
+
+def normal_probability(value, media , variance):
+    return (1 / variance*math.sqrt(2*math.pi))*math.e**((-((value-media)**2))/(2*(variance**2)))
+
+def preprocess_tweets(tweet):
+    tweet = tweet.strip(" \t\n\r")
+    tweet = re.sub(r'[\t\n\r]', " ", tweet)
+    tweet = re.sub(r'(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?', " ", tweet)
+    return tweet
