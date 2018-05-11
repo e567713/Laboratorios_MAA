@@ -1,0 +1,21 @@
+@attribute Num1 numeric
+@attribute Num2 numeric
+@attribute Num3 numeric
+@attribute Num4 numeric
+@attribute Resultado {NO,YES}
+
+@data
+253,463,543,376,NO
+273,493,564,736,NO
+293,483,574,476,YES
+223,437,584,076,YES
+213,437,54,976,YES
+233,453,594,786,NO
+233,433,534,676,YES
+235,423,324,476,NO
+237,493,154,176,YES
+283,483,544,76,YES
+293,473,554,726,YES
+203,453,546,746,YES
+203,443,514,726,YES
+263,433,154,776,NO

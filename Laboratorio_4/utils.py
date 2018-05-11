@@ -1,3 +1,4 @@
+
 from scipy.io import arff
 import numpy as np
 from collections import Counter
@@ -5,6 +6,7 @@ import copy
 
 def read_file(path):
     return arff.loadarff(path)
+
 
 
 def decode_data (data):
@@ -57,6 +59,7 @@ def found_most_common_attribute_value(data, attribute):
     return max(values, key=data.get)
 
 
+
 def split_20_80(d):
     # Divide el conjunto de datos en dos subconjuntos, uno con el 80% de los datos
     # y el otro con el restante 20%.
@@ -76,3 +79,66 @@ def split_20_80(d):
     subset_80 = data[limit:]
 
     return (subset_20, subset_80)
+
+def process_numeric_values(data, numeric_attributes, target_attr):
+
+    for numeric_attr in numeric_attributes:
+        # Se calcula el mejor threshold para el atributo numérico numeric_attr
+        # midiendo según la gananacia de información.
+
+        thresholds = []
+
+        # Se ordenan los ejemplos en orden ascendente según los valores de numeric_attr.
+        sorted_data = sorted(data, key=lambda x: x[numeric_attr])
+
+        # Se recorre el conjunto data comparando de a 2 elementos para encontrar posibles
+        # thresholds.
+        for i in range(0, len(sorted_data) - 1):
+            instance_1 = sorted_data[i]
+            instance_2 = sorted_data[i + 1]
+
+            # En caso de encontrar un posible candidato se almacena
+            if instance_1[target_attr] != instance_2[target_attr] and instance_1[numeric_attr] != instance_2[numeric_attr]:
+                thresholds.append(
+                    (instance_1[numeric_attr] + instance_2[numeric_attr]) / 2)
+
+        # Se recorre la lista de posibles thresholds.
+        for threshold in thresholds:
+
+            # Se dividen los valores de numeric_attr según el threshold dado.
+            splitted_data = set_numeric_attribute_values(
+                copy.deepcopy(data), numeric_attr, threshold)
+
+            # Se busca el threshold que maximiza la ganancia de información.
+            maximum_thresholds_tied = []
+            max_ig = -1
+            ig = information_gain(splitted_data, numeric_attr, target_attr, use_missing_values_first_method)
+            if ig > max_ig:
+                max_ig = ig
+                maximum_thresholds_tied = []
+                maximum_thresholds_tied.append(splitted_data)
+            elif ig == max_ig:
+                maximum_thresholds_tied.append(splitted_data)
+
+        best_splitted_data = random.choice(maximum_thresholds_tied)
+
+        # Se setean los valores del conjunto de datos según los resultados obtenidos
+        # por el mejor threshold.
+        for i in range(len(data)):
+            data[i][numeric_attr] = best_splitted_data[i][numeric_attr]
+
+    return data
+        
+def set_numeric_attribute_values(data, numeric_attr, threshold):
+    # Divide los valores del atributo numérico numeric_attr según
+    # el valor del threshold pasado por parámetro.
+
+    new_key = numeric_attr + '>' + str(threshold)
+
+    for instance in data:
+        if instance[numeric_attr] > threshold:
+            instance[numeric_attr] = 1
+        else:
+            instance[numeric_attr] = 0
+
+    return data
