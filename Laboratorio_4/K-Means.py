@@ -1,4 +1,5 @@
 import random
+import math
 class KMeans:
 	def __init__(self, k, max_iter, times):
 		# k: Número de clusters. 
@@ -18,18 +19,21 @@ class KMeans:
 		for i in range(self.times):
 
 			# Selecciono k centroides iniciales al azar para la corrida i del algoritmo.
-			initial_centroids = random.sample(data, self.k)
+			centroids = random.sample(data, self.k)
 
 			# Los asigno aleatoriamente al conjunto de entrenamiento
-			current_centrois = []
+			assigned_centroids = [random.choice(range(k)) for iter in range(k)]
 
 			j = 0
 			while not self.has_converged() and j < max_iter: 	
 				
 				# Recorro conjunto de entrenamiento.
-				for instance in data:
+				for index, instance in data:
 
-					current_centroids[] = self.assign()
+					# Asigno centroides a los ejemplos.
+					assigned_centroids[index] = self.assign(instance, centroids)
+					
+					# Actualizo lista de centroides. 
 					self.update()
 
 
@@ -38,7 +42,23 @@ class KMeans:
 
 
 
-	def assign
+	def assign(self, instance, centroids):
+		min_distance = self.euclidean_distance(instance, centroids[0])
+		min_centroid = centroids[0]
+
+		for i in range (1, len(centroids)):
+			new_distance = self.euclidean_distance(instance, centroids[i])
+			if new_distance < min_distance:
+				min_distance = new_distance
+				min_centroid = centroids[i]
+
+		return min_centroid
 
 	def update
+
+	def euclidean_distance(X, Y):
+		distance = 0
+		for i in range(X):
+			distance += (X[i] + Y[i])**2
+		return math.sqrt(distance)
 
