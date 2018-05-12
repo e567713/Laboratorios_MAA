@@ -7,6 +7,7 @@ from numpy import argmax
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 import KNN
+from naive_bayes import NaiveBayes
 
 def PCA(data, attributes, numeric_atts, cant_vectors, percentage):
   # cant_vectors es la cantidad de vectores que vamos a tomar en cuenta para achicar el data
@@ -311,8 +312,7 @@ def insert_target_attributes(data, target_attr, target_attributes):
   for i in range(len(data)):
     data[i][target_attr] = target_attributes[i]
 
-def KNN_holdout(data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, normalize, use_standarization):
-
+def construct_validation_and_training_data(data_20, data_80, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes, PCA_cant_vectors, PCA_percentage):
   # CONJUNTO DE ENTRENAMIENTO 
   training_data, target_attributes1 = extract_target_attributes(data_80)
 
@@ -364,7 +364,7 @@ def KNN_holdout(data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, n
   insert_target_attributes(PC_validation_data, target_attr, target_attributes2)
 
   
-  return KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, k, weight, normalize, use_standarization)
+  return PC_training_data, PC_validation_data, PC_attributes
 
 if __name__ == "__main__":
   examples = utils.read_file('Autism-Adult-Data.arff')
@@ -421,10 +421,18 @@ if __name__ == "__main__":
   
   # Se divide el conjunto de datos
   data_20, data_80 = utils.split_20_80(data)
+  PC_training_data, PC_validation_data, PC_attributes = construct_validation_and_training_data(data_20, 
+                                                        data_80, categorical_atts, categorical_atts_indexes, 
+                                                        non_categorical_atts, non_categorical_atts_indexes, 1, 99)
 
                                   # (data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, normalize, use_standarization):
-  validation_set_len, cant_errors, errors_media = KNN_holdout(data_20, data_80, None, 95, 3, True, True, True)
-  print(cant_errors)
+  validation_len_KNN, cant_errors_KNN, errors_media_KNN = KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, 3, True, True, True)
+  print()
+  print('cantidad de errores KNN:',cant_errors_KNN)
+
+  nb_classifier = NaiveBayes(PC_training_data, PC_attributes, target_attr)
+  validation_len_NB, cant_errors_NB, errors_media_NB = nb_classifier.holdout_validation(PC_validation_data, target_attr)
+  print('cantidad de errores NB:',cant_errors_NB)
 
 
 

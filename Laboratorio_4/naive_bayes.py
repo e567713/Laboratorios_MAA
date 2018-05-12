@@ -15,8 +15,8 @@ class NaiveBayes:
 
         for attribute in attributes:
             self.attributes_values[attribute] = {}
-            self.attributes_values[attribute]["mean"] = {b'YES':0,b'NO':0}
-            self.attributes_values[attribute]["variance"] = {b'YES':0,b'NO':0}
+            self.attributes_values[attribute]["mean"] = {'YES':0,'NO':0}
+            self.attributes_values[attribute]["variance"] = {'YES':0,'NO':0}
 
         for instance in data:
 
@@ -37,12 +37,19 @@ class NaiveBayes:
         #Calculo las medias y las varianzas
         for attribute in attributes:
             if attribute != target_attr:
-                self.attributes_values[attribute]["mean"][b'YES'] = self.attributes_values[attribute]["mean"][b'YES'] / self.target_values_frecuency[b'YES']
-                self.attributes_values[attribute]["mean"][b'NO'] = self.attributes_values[attribute]["mean"][b'NO'] / self.target_values_frecuency[b'NO']
-                self.attributes_values[attribute]["variance"][b'YES'] = self.attributes_values[attribute]["variance"][b'YES'] / self.target_values_frecuency[b'YES']
-                self.attributes_values[attribute]["variance"][b'NO'] = self.attributes_values[attribute]["variance"][b'NO'] / self.target_values_frecuency[b'NO']
-                self.attributes_values[attribute]["variance"][b'YES'] += -self.attributes_values[attribute]["mean"][b'YES']**2
-                self.attributes_values[attribute]["variance"][b'NO'] += -self.attributes_values[attribute]["mean"][b'NO']**2
+                self.attributes_values[attribute]["mean"]['YES'] = self.attributes_values[attribute]["mean"]['YES'] / self.target_values_frecuency['YES']
+                self.attributes_values[attribute]["mean"]['NO'] = self.attributes_values[attribute]["mean"]['NO'] / self.target_values_frecuency['NO']
+                self.attributes_values[attribute]["variance"]['YES'] = self.attributes_values[attribute]["variance"]['YES'] / self.target_values_frecuency['YES']
+                self.attributes_values[attribute]["variance"]['NO'] = self.attributes_values[attribute]["variance"]['NO'] / self.target_values_frecuency['NO']
+                self.attributes_values[attribute]["variance"]['YES'] += -self.attributes_values[attribute]["mean"]['YES']**2
+                self.attributes_values[attribute]["variance"]['NO'] += -self.attributes_values[attribute]["mean"]['NO']**2
+
+        print()
+        print(self.attributes_values[attribute]["mean"]['YES'])
+        print(self.attributes_values[attribute]["mean"]['NO'])
+        print(self.attributes_values[attribute]["variance"]['YES'])
+        print(self.attributes_values[attribute]["variance"]['NO'])
+        print()
 
     def classify(self, instance):
         # Clasifica la instancia dada.
@@ -53,21 +60,31 @@ class NaiveBayes:
         result = {}
 
         # Recorre los valores del atributo objetivo.
-        # Ej: Pasa por b'YES' y por b'NO'.
+        # Ej: Pasa por 'YES' y por 'NO'.
         for target_attr_value in self.target_values_frecuency.keys():
             # Se almacena probabilidad del valor objetivo en todo el conjunto.
-            # Ej: P(target_attr = b'YES')
+            # Ej: P(target_attr = 'YES')
             result[target_attr_value] = self.target_values_frecuency[target_attr_value]/self.total
             # Se recorren los atributos de la instancia almacenando su frecuencia.
-            # Ej: P(gender = m | target_attr = b'NO')
+            # Ej: P(gender = m | target_attr = 'NO')
             for attr in self.attributes:
-                if target_attr_value == b'YES':
-                    result[target_attr_value] *= self.normal_probability(instance[attr],self.attributes_values[attr]['mean'][b'YES'],self.attributes_values[attr]['variance'][b'YES'])
+                if target_attr_value == 'YES':
+                    result[target_attr_value] *= self.normal_probability(instance[attr],self.attributes_values[attr]['mean']['YES'],self.attributes_values[attr]['variance']['YES'])
                 else:
-                    result[target_attr_value] *= self.normal_probability(instance[attr],self.attributes_values[attr]['mean'][b'NO'],self.attributes_values[attr]['variance'][b'NO'])
+                    result[target_attr_value] *= self.normal_probability(instance[attr],self.attributes_values[attr]['mean']['NO'],self.attributes_values[attr]['variance']['NO'])
 
         # Se clasifica según el valor de target_attr con mayor probabilidad.
         return reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
 
     def normal_probability(self, value, media , variance):
         return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
+
+    def holdout_validation(self, validation_set, target_attr):
+        # retorna (len(validation_set), cantidad de errores, promedio de errores)
+        errors = 0
+        for instance in validation_set:
+            result = self.classify(instance)
+            if result != instance[target_attr]:
+                errors += 1
+
+        return (len(validation_set), errors, errors/len(validation_set))
