@@ -11,15 +11,15 @@ from naive_bayes import NaiveBayes
 ######################### Constantes ################################
 ##################################################################### 
 
-file_names = 'bbchealth.txt' 
+all_files = ['Health-Tweets/bbchealth.txt', 'Health-Tweets/cbchealth.txt'] 
 
 
 ##################################################################### 
 ################# Importamos el conjunto de tweets ##################
 ##################################################################### 
 
-df=pd.read_csv(file_names,sep='|',names=['Id','Date','Message'])
-
+# df=pd.read_csv(file_names,sep='|',names=['Id','Date','Message'])
+df = pd.concat((pd.read_csv(f, sep='|', names=['Id','Date','Message']) for f in all_files))
 #tweet es la columna de mensajes
 tweet = df['Message']
 
@@ -30,7 +30,7 @@ print("-------")
 print(matrix)
 print(cv.get_feature_names())
 print("--------")
-
+print(len(matrix))
 
 
 ##################################################################### 
@@ -40,23 +40,23 @@ print("--------")
 
 
 # Calculamos media y varianza de cada feature
-means = []
-variances = []
-for column in range(matrix.shape[1]):
-	means.append(np.mean(matrix[:,column]))
-	variances.append(np.var(matrix[:,column]))
+# means = []
+# variances = []
+# for column in range(matrix.shape[1]):
+# 	means.append(np.mean(matrix[:,column]))
+# 	variances.append(np.var(matrix[:,column]))
 
-instance = cv.transform(["Ernesto Fernandez Ferreyra"]).toarray()[0]
+# instance = cv.transform(["Ernesto Fernandez Ferreyra"]).toarray()[0]
 
-print(instance)
+# print(instance)
 
-prob = 1
-for column in range(len(instance)):
-	print(means[column])
-	print(variances[column])
-	prob *= utils.normal_probability(instance[column], means[column], variances[column])
+# prob = 1
+# for column in range(len(instance)):
+# 	print(means[column])
+# 	print(variances[column])
+# 	prob *= utils.normal_probability(instance[column], means[column], variances[column])
 
-print(prob)
+# print(prob)
 # anomalyDetector = AnomaliesDetection(file_names)
 
 
