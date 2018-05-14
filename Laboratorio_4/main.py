@@ -1,42 +1,63 @@
 import pandas as pd
 import utils
-import math
-import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from anomaliesDetection import AnomaliesDetection
 from naive_bayes import NaiveBayes
 
 
-##################################################################### 
-######################### Constantes ################################
-##################################################################### 
+#####################################################################
+#                          Constantes                               #
+#####################################################################
 
-all_files = ['Health-Tweets/bbchealth.txt', 'Health-Tweets/cbchealth.txt'] 
-
-
-##################################################################### 
-################# Importamos el conjunto de tweets ##################
-##################################################################### 
-
-# df=pd.read_csv(file_names,sep='|',names=['Id','Date','Message'])
-df = pd.concat((pd.read_csv(f, sep='|', names=['Id','Date','Message']) for f in all_files))
-#tweet es la columna de mensajes
-tweet = df['Message']
-
-cv = CountVectorizer(stop_words='english', preprocessor=utils.preprocess_tweets)
-matrix = cv.fit_transform(tweet).toarray()
-print(cv.vocabulary_)
-print("-------")
-print(matrix)
-print(cv.get_feature_names())
-print("--------")
-print(len(matrix))
+all_files = ['Health-Tweets/bbchealth.txt',
+             'Health-Tweets/cbchealth.txt',
+             'Health-Tweets/cnnhealth.txt',
+             'Health-Tweets/everydayhealth.txt',
+             'Health-Tweets/foxnewshealth.txt',
+             'Health-Tweets/gdnhealthcare.txt',
+             'Health-Tweets/goodhealth.txt',
+             'Health-Tweets/KaiserHealthNews.txt',
+             'Health-Tweets/latimeshealth.txt',
+             'Health-Tweets/msnhealthnews.txt',
+             'Health-Tweets/NBChealth.txt',
+             'Health-Tweets/nprhealth.txt',
+             'Health-Tweets/nytimeshealth.txt',
+             'Health-Tweets/reuters_health.txt',
+             'Health-Tweets/usnewshealth.txt',
+             'Health-Tweets/wsjhealth.txt']
 
 
-##################################################################### 
+#####################################################################
+#         Importación y preprocesamiento de los tweets              #
+#####################################################################
+print('Leyendo conjunto de tweets...')
+df = pd.concat(
+    (pd.read_csv(
+     f, sep='|', names=['Id', 'Date', 'Message'], encoding = "ISO-8859-1") for f in all_files))
+print('Lectura finalizada')
+
+# Nos quedamos solo con la columna de mensajes.
+tweets = df['Message']
+
+# Utilizamos CountVectorizer para realizar la tokenización y conteo.
+# Adicionalmente se le pasa como parámetro una función preprocessor que
+# preprocesará cada tweet antes de la tokenización.
+cv = CountVectorizer(stop_words='english',
+                     preprocessor=utils.preprocess_tweets)
+matrix = cv.fit_transform(tweets).toarray()
+
+
+# print(cv.vocabulary_)
+# print("-------")
+# print(matrix)
+# print(cv.get_feature_names())
+# print("--------")
+# print(len(matrix))
+
+
+#####################################################################
 ######################### Ejercicio 3 ###############################
-##################################################################### 
-
+#####################################################################
 
 
 # Calculamos media y varianza de cada feature
@@ -60,7 +81,6 @@ print(len(matrix))
 # anomalyDetector = AnomaliesDetection(file_names)
 
 
-
 # examples = utils.read_file('EjemploBayesNumerico.arff')
 # data_set = examples[0]  # Datos
 # metadata = examples[1]  # Metadatos
@@ -75,7 +95,6 @@ print(len(matrix))
 # nb_classifier_theoric = NaiveBayes(data_set, attributes_theoric, target_attr_theoric)
 # for instance in data_set:
 #     print(nb_classifier_theoric.classify(instance))
-
 
 
 # cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
