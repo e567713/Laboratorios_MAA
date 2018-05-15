@@ -77,7 +77,7 @@ file_names = ["bbchealth.txt", "cbchealth.txt", "cnnhealth.txt", "everydayhealth
 
 tweetCollection = pd.concat((pd.read_csv("Health-Tweets/" + f, sep='|', encoding= "ISO-8859-1", names=['Id','Date','Message']) for f in file_names))
 
-tweet = 'Risk RT risk level bbc life VIDEO'
+tweet = 'The boy love learn automatic learning in a hospital'
 
 #tweet es la columna de mensajes
 data = tweetCollection['Message']
@@ -85,7 +85,10 @@ data = tweetCollection['Message']
 #Se crea la instancia AnomaliesDetection donde se inicializa un countVectorizer
 anomaliesDetector = AnomaliesDetection(data)
 
-print("Se ejecutarán 3 mátodos para identificar tweet anórmalos")
+print("Se ejecutarán 3 mátodos para identificar un tweet anórmalos")
+print("El tweet a analizar es el siguiente:")
+print('        The boy love learn automatic learning in a hospital')
+print()
 
 print("Primer método retorna: ")
 print(anomaliesDetector.firstMethod(data, tweet))
