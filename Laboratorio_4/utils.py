@@ -161,3 +161,50 @@ def preprocess_tweets(tweet):
     tweet = re.sub(r'[\t\n\r]', " ", tweet)
     tweet = re.sub(r'(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?', " ", tweet)
     return tweet
+
+
+def scale(data, attributes, use_standarization):
+    # 'data' es es el conjunto de entrenamiento
+    # 'attributes' un array con los nombres de los atributos
+    # si 'use_standarization' = true, normaliza usando media y varianza
+    # si no, usa min-max
+    # Se retorna (data, scalation_params) siendo el último {att: (mean, std)}
+    # en caso de use_stand = true, o {att: (min, max)} en caso de use_stand = false
+    numeric_attributes_values = {}
+    scalation_parameters = {}
+    # Se recorre el data para extraer los valores de los distintos atributos numéricos
+    for instance in data:
+        for attribute in attributes:
+            #  Si se encuentra un valor numérico se agrega al diccionario
+            if isinstance(instance[attribute], np.float64) or isinstance(instance[attribute], float):
+                if attribute in numeric_attributes_values:
+                    numeric_attributes_values[attribute].append(instance[attribute])
+                else:
+                    numeric_attributes_values[attribute] = [instance[attribute]]
+    for att, values in numeric_attributes_values.items():
+        values_np = np.asarray(values)
+        if use_standarization:
+            scaled = (values_np - values_np.mean()) / values_np.std()
+            scalation_parameters[att] = (values_np.mean(), values_np.std())
+            i = -1
+            for instance in data:
+                i += 1
+                instance[att] = scaled[i]
+        else:
+            scaled = (values_np - values_np.min()) / (values_np.max() - values_np.min())
+            scalation_parameters[att] = (values_np.min(), values_np.max())
+            i = -1
+            for instance in data:
+                i += 1
+                instance[att] = scaled[i]
+    return(data, scalation_parameters)
+
+def scale_instance(instance, scalation_parameters, use_standarization):
+    for att, parameters in scalation_parameters.items():
+        mean_or_min = parameters[0]
+        std_or_max = parameters[1]
+        if use_standarization:
+            instance[att] = ((instance[att] - mean_or_min) / std_or_max)
+        else:
+            instance[att] = (instance[att] - mean_or_min) / (std_or_max - mean_or_min)
+    return instance
