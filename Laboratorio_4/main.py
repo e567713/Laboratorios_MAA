@@ -1,3 +1,5 @@
+import glob
+from sklearn.metrics.cluster import adjusted_rand_score
 import pandas as pd
 import utils
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -5,8 +7,18 @@ from anomaliesDetection import AnomaliesDetection
 from naive_bayes import NaiveBayes
 from K_Means import K_Means
 from sklearn.cluster import KMeans
+import scipy.stats as st
+import copy
+import ejer2
+import KNN
+from sklearn.feature_selection import chi2
 
+from scipy.stats import norm
+import matplotlib.pyplot as plt
 
+# labels_true = [[0.0, 0.1, 0.2],[0.0, 0.1, 0.2]]
+# labels_pred = [[0.1, 0.1, 0.0],[0.0, 0.1, 0.2]]
+# print(adjusted_rand_score(labels_true, labels_pred))
 #####################################################################
 #                          Constantes                               #
 #####################################################################
@@ -47,7 +59,7 @@ k = 10
 max_iter = 5 
 
 # Número de inicializaciones distintas a realizar.
-times = 1
+times = 20
 
 #####################################################################
 #         Importación y preprocesamiento de los tweets              #
@@ -68,17 +80,8 @@ cv = CountVectorizer(stop_words='english', min_df=min_df,
                      preprocessor=utils.preprocess_tweets)
 matrix = cv.fit_transform(tweets).toarray()
 
-
-# print(cv.vocabulary_)
-# print("-------")
-# print(list(matrix))
-# print(cv.get_feature_names())
-# print("--------")
-# print(len(matrix))
-# names = cv.get_feature_names()
-
 data = list(matrix)
-print(len(data)) 
+original_length = len(data) 
 print('Quitando tweets vacíos...')
 cant = 0
 for i,twe in enumerate(data):
@@ -86,22 +89,24 @@ for i,twe in enumerate(data):
 		del data[i]
 		cant += 1
 print('Se termina de quitar tweets vacíos')
-print(len(data)) 
-
+print('Se quitan:', original_length - len(data), 'tweets, finalizando con un total de: ', len(data)) 
 
 #####################################################################
 ######################### Ejercicio 1 ###############################
 #####################################################################
 
+# Nuestra implementación de K-Means.
 kmeans = K_Means(k, max_iter, times)
 kmeans.train(data)
-print(kmeans.optimal[0])
-scikit_kmeans = KMeans(n_clusters=k, random_state=0, max_iter=max_iter, n_init=times).fit(data)
-print(scikit_kmeans.cluster_centers_)
 
-for centroid in scikit_kmeans.cluster_centers_:
-	for coord in centroid:
-		print(round(coord, 3))
+
+scikit_kmeans = KMeans(n_clusters=k, random_state=0, max_iter=max_iter, n_init=times).fit(data)
+
+# Evaluamos.
+rand_score = adjusted_rand_score(list(scikit_kmeans.labels_), kmeans.optimal[1])
+print('Rand Score:', rand_score)
+
+# Guardamos resultados
 file = open('results.txt', 'a')
 file.write('-----------------------------------------------------')
 file.write('\n')
@@ -120,66 +125,186 @@ for centroid in scikit_kmeans.cluster_centers_:
 	file.write('*******************************')
 	file.write('\n')
 	file.write('\n')
+file.write('Rand Index ')
+file.write('\n')
+file.write('\n')
+file.write(str(rand_score))
 file.close()
 
-diff = []
-for index, centroid in enumerate(kmeans.optimal[0]):
-	diff.append(kmeans.euclidean_distance(centroid, scikit_kmeans.cluster_centers_[index]))
+#####################################################################
+######################### Ejercicio 2 ###############################
+#####################################################################
+print('-----------------------------------------------------------------------')
+print()
+print("Ejercicio 2")
+print()
 
-print(diff)
+examples = utils.read_file('Autism-Adult-Data.arff')
+data_set = examples[0]  # Datos
+metadata = examples[1]  # Metadatos
+
+target_attr = 'Class/ASD'
+attributes = ['A1_Score',
+            'A2_Score',
+            'A3_Score',
+            'A4_Score',
+            'A5_Score',
+            'A6_Score',
+            'A7_Score',
+            'A8_Score',
+            'A9_Score',
+            'A10_Score',
+            'age',
+            'gender',
+            'ethnicity',
+            'jundice',
+            'austim',
+            'contry_of_res',
+            'used_app_before',
+            'age_desc',
+            'relation']
+
+categorical_atts = ['A1_Score',
+                    'A2_Score',
+                    'A3_Score',
+                    'A4_Score',
+                    'A5_Score',
+                    'A6_Score',
+                    'A7_Score',
+                    'A8_Score',
+                    'A9_Score',
+                    'A10_Score',
+                    'gender',
+                    'ethnicity',
+                    'jundice',
+                    'austim',
+                    'contry_of_res',
+                    'used_app_before',
+                    'age_desc',
+                    'relation']
+
+non_categorical_atts = ['age']
+
+n = 5
+
+categorical_atts_indexes = [0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18]
+non_categorical_atts_indexes = [10]
+
+data = utils.process_missing_values(data_set, attributes, True)
+data = ejer2.decode_data(data)
+
+# Se divide el conjunto de datos
+data_20, data_80 = utils.split_20_80(data)
+
+# Se arman los training y validation set 
+training_data, training_target_attributes = ejer2.extract_target_attributes(data_80)
+
+numeric_training_set = ejer2.one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+
+validation_data, validation_target_attributes = ejer2.extract_target_attributes(data_20)
+numeric_validation_set = ejer2.one_hot_encoding(validation_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+
+numeric_attributes = list(numeric_training_set[0].keys())
+numeric_atts_len = len(numeric_attributes)
+print('cantidad de atributos originales', len(categorical_atts))
+print('cantidad de atributos luego de onehot encoding', numeric_atts_len)
+print('tamaño del conjunto de validación', len(validation_data))
+
+
+
+#######################################################################################
+###########################             PCA            ################################
+#######################################################################################
+PC_training_data, PC_validation_data, PC_attributes = ejer2.PCA_validation_and_training_data(copy.deepcopy(numeric_training_set), copy.deepcopy(numeric_validation_set), 
+                                                    copy.deepcopy(training_target_attributes), copy.deepcopy(validation_target_attributes), 
+                                                    numeric_attributes, target_attr, n, 95)
+
+                                                                            # (data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
+errors_KNN = KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, 3, True, True, True)
+
+print()
+print('se utilizán los primeros', n, 'atributos de mayor importancia devueltos por CHI2')
+
+print()
+print('cantidad de errores KNN/PCA:',errors_KNN[1])
+
+nb_classifier = NaiveBayes(PC_training_data, PC_attributes, target_attr)
+errors_NB = nb_classifier.holdout_validation(PC_validation_data, target_attr)
+print('cantidad de errores NB/PCA:',errors_NB[1])
+
+
+#######################################################################################
+###########################             CHI2           ################################
+#######################################################################################
+
+training_set_array = []
+for x in copy.deepcopy(numeric_training_set):
+    training_set_array.append(list(x.values()))
+
+chi2_results = chi2(training_set_array, training_target_attributes)
+chi2_result_list = chi2_results[0].tolist()
+
+max_indexes = ejer2.get_n_max_indexes(chi2_result_list, n)
+max_attributes = []
+for j in max_indexes:
+    max_attributes.append(numeric_attributes[j])
+
+chi_training_set = ejer2.format_data_chi(max_attributes, copy.deepcopy(numeric_training_set))
+chi_attributes = list(chi_training_set[0].keys())
+
+ejer2.insert_target_attributes(chi_training_set, target_attr, training_target_attributes)
+
+chi_validation_set = ejer2.format_data_chi(max_attributes, copy.deepcopy(numeric_validation_set))
+ejer2.insert_target_attributes(chi_validation_set, target_attr, validation_target_attributes)
+
+chi_errors_KNN = KNN.holdout_validation(chi_training_set, chi_validation_set, 
+                                        target_attr, chi_attributes, 3, True, True, True)
+print()
+print('cantidad de errores KNN/CHI2:',chi_errors_KNN[1])
+
+nb_classifier = NaiveBayes(chi_training_set, chi_attributes, target_attr)
+chi_errors_NB = nb_classifier.holdout_validation(chi_validation_set, target_attr)
+print('cantidad de errores NB/CHI2:',chi_errors_NB[1])
+print()
+print('-----------------------------------------------------------------------')
+
+
+
 #####################################################################
 ######################### Ejercicio 3 ###############################
 #####################################################################
 
+#####################################################################
+#################### DETECCION DE ANOMALIAS #########################
+#####################################################################
+print()
+print("Ejercicio 3")
+print()
 
-# Calculamos media y varianza de cada feature
-# means = []
-# variances = []
-# for column in range(matrix.shape[1]):
-# 	means.append(np.mean(matrix[:,column]))
-# 	variances.append(np.var(matrix[:,column]))
+file_names = ["bbchealth.txt", "cbchealth.txt", "cnnhealth.txt", "everydayhealth.txt", "gdnhealthcare.txt" , "goodhealth.txt",
+			  "latimeshealth.txt", "nprhealth.txt", "nytimeshealth.txt", "reuters_health.txt", "usnewshealth.txt",
+			  "foxnewshealth.txt", "KaiserHealthNews.txt", "msnhealthnews.txt", "NBChealth.txt", "wsjhealth.txt"]
 
-# instance = cv.transform(["Ernesto Fernandez Ferreyra"]).toarray()[0]
+tweetCollection = pd.concat((pd.read_csv("Health-Tweets/" + f, sep='|', encoding= "ISO-8859-1", names=['Id','Date','Message']) for f in file_names))
 
-# print(instance)
+tweet = 'The boy love learn automatic learning in a hospital'
 
-# prob = 1
-# for column in range(len(instance)):
-# 	print(means[column])
-# 	print(variances[column])
-# 	prob *= utils.normal_probability(instance[column], means[column], variances[column])
+#tweet es la columna de mensajes
+data = tweetCollection['Message']
 
-# print(prob)
-# anomalyDetector = AnomaliesDetection(file_names)
+#Se crea la instancia AnomaliesDetection donde se inicializa un countVectorizer
+anomaliesDetector = AnomaliesDetection(data)
 
+print("Se ejecutarán 3 mátodos para identificar un tweet anórmalos")
+print("El tweet a analizar es el siguiente:")
+print('        The boy love learn automatic learning in a hospital')
+print()
 
-# examples = utils.read_file('EjemploBayesNumerico.arff')
-# data_set = examples[0]  # Datos
-# metadata = examples[1]  # Metadatos
-#
-# attributes_theoric = ['Num1',
-#                       'Num2',
-#                       'Num3',
-#                       'Num4']
-#
-# target_attr_theoric = 'Resultado'
-#
-# nb_classifier_theoric = NaiveBayes(data_set, attributes_theoric, target_attr_theoric)
-# for instance in data_set:
-#     print(nb_classifier_theoric.classify(instance))
-
-
-# cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
-# matrix = cv.fit_transform(tweet)
-# print(cv.vocabulary_)
-# print("-------")
-# print(matrix.toarray())
-# print(cv.get_feature_names())
-# print("--------")
-
-# print(cv.transform(['Something papel new.']).toarray())
-# print(cv.vocabulary_.get('papel'))
-
-# transformer = TfidfTransformer(smooth_idf=False)
-# tfidf = transformer.fit_transform(matrix.toarray())
-# print( tfidf.toarray() )
+print("Primer método retorna: ")
+print(anomaliesDetector.firstMethod(data, tweet))
+print()
+print("Segundo método retorna:")
+print(anomaliesDetector.secondMethod(data, tweet))
+print()
+print("Tercer método retorna:")
+print(anomaliesDetector.thirdMethod(data, tweet))

@@ -101,7 +101,7 @@ def find_most_common_function_value(data, target_attr, use_weight):
       max_values = []
       max_values.append(key)
     elif value == max_qty:
-        max_values.append(key)
+      max_values.append(key)
   max_v = random.choice(max_values)
   return max_v
 

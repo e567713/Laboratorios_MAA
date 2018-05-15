@@ -44,12 +44,13 @@ class NaiveBayes:
                 self.attributes_values[attribute]["variance"]['YES'] += -self.attributes_values[attribute]["mean"]['YES']**2
                 self.attributes_values[attribute]["variance"]['NO'] += -self.attributes_values[attribute]["mean"]['NO']**2
 
-        print()
-        print(self.attributes_values[attribute]["mean"]['YES'])
-        print(self.attributes_values[attribute]["mean"]['NO'])
-        print(self.attributes_values[attribute]["variance"]['YES'])
-        print(self.attributes_values[attribute]["variance"]['NO'])
-        print()
+        # print()
+        # print('medias y varianzas NB (calcularlas)')
+        # print(self.attributes_values[attribute]["mean"]['YES'])
+        # print(self.attributes_values[attribute]["mean"]['NO'])
+        # print(self.attributes_values[attribute]["variance"]['YES'])
+        # print(self.attributes_values[attribute]["variance"]['NO'])
+        # print()
 
     def classify(self, instance):
         # Clasifica la instancia dada.

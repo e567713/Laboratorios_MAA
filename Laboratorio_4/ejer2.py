@@ -6,6 +6,7 @@ from numpy import array
 from numpy import argmax
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.feature_selection import chi2
 import KNN
 from naive_bayes import NaiveBayes
 
@@ -63,8 +64,10 @@ def PCA(data, attributes, numeric_atts, cant_vectors, percentage):
     # percentage% de variabilidad de los datos
     cant_vectors, sum_percentage = get_cant_vectors_gte_percentage(eigen_values, percentage)
     row_eigen_vectors = row_eigen_vectors[:cant_vectors]
-  
+    
+  print()
   print('La cantidad de componentes principales utilizadas es:', cant_vectors)
+  print('de un total de:', numeric_atts_len, "atributos")
   print('que suman un', "%.2f" % sum_percentage, '% de variabilidad de los datos')
 
   matrix_T = multiply_matrix(row_eigen_vectors, row_data)
@@ -312,41 +315,19 @@ def insert_target_attributes(data, target_attr, target_attributes):
   for i in range(len(data)):
     data[i][target_attr] = target_attributes[i]
 
-def construct_validation_and_training_data(data_20, data_80, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes, PCA_cant_vectors, PCA_percentage):
-  # CONJUNTO DE ENTRENAMIENTO 
-  training_data, target_attributes1 = extract_target_attributes(data_80)
-
-  all_numeric_data1 = one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
-
-  new_attributes = list(all_numeric_data1[0].keys())
-  numeric_atts_len = len(new_attributes)
-  # print(new_attributes)
-
-  PC_training_data, row_eigen_vectors, original_means = PCA(all_numeric_data1, new_attributes, new_attributes, PCA_cant_vectors, PCA_percentage)
+def PCA_validation_and_training_data(numeric_training_set, numeric_validation_set, training_target_attributes, validation_target_attributes, attributes, target_attr, PCA_cant_vectors, PCA_percentage):
+  PC_training_data, row_eigen_vectors, original_means = PCA(numeric_training_set, attributes, attributes, PCA_cant_vectors, PCA_percentage)
 
   PC_attributes = list(PC_training_data[0].keys())
 
   # METO EL TARGET ATTRIBUTE
-  insert_target_attributes(PC_training_data, target_attr, target_attributes1)
+  insert_target_attributes(PC_training_data, target_attr, training_target_attributes)
 
-  # FINAL_DATA TIENE LA DATA DESP DE HACER PCA
+  # PC_training_data TIENE LA DATA DESP DE HACER PCA
   # print(PC_training_data)
 
-
-  
-  validation_data, target_attributes2 = extract_target_attributes(data_20)
-  all_numeric_data2 = one_hot_encoding(validation_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
-  # INSTANCIAS A CLASIFICAR
-  # print()
-  # print(final_training_data)
-  # print()
-  # print(instance)
-
-  new_attributes2 = list(all_numeric_data2[0].keys())
-  numeric_atts_len2 = len(new_attributes2)
-
   # RESTO LA MEDIA A CADA ATRIBUTO
-  row_data = transpose_and_format_data(all_numeric_data2, numeric_atts_len)
+  row_data = transpose_and_format_data(numeric_validation_set, len(attributes))
   for i in range(len(row_data)):
     for j in range (len(row_data[0])):
       row_data[i][j] -= original_means[i]
@@ -361,10 +342,32 @@ def construct_validation_and_training_data(data_20, data_80, categorical_atts, c
   PC_validation_data = format_PC_data(matrix)
 
   # METO EL TARGET ATTRIBUTE
-  insert_target_attributes(PC_validation_data, target_attr, target_attributes2)
-
+  insert_target_attributes(PC_validation_data, target_attr, validation_target_attributes)
   
   return PC_training_data, PC_validation_data, PC_attributes
+
+def format_data_chi(attributes, data):
+  chi_atts_dict = {}
+  new_data = []
+  for i in range(len(attributes)): 
+    chi_atts_dict['CHI_' + str(i+1)] = None
+
+  for instance in data:
+    new_data.append(copy.deepcopy(chi_atts_dict))
+    for i in range(len(attributes)):
+      new_data[-1]['CHI_' + str(i+1)] = instance[attributes[i]]
+
+  return new_data
+  
+
+def get_n_max_indexes(data, n):
+  max_indexes = []
+  for i in range(n):
+    index = data.index(max(data))
+    max_indexes.append(index)
+    data.pop(index)
+  return max_indexes
+  
 
 if __name__ == "__main__":
   examples = utils.read_file('Autism-Adult-Data.arff')
@@ -418,38 +421,70 @@ if __name__ == "__main__":
 
   data = utils.process_missing_values(data_set, attributes, True)
   data = decode_data(data)
-  
+
   # Se divide el conjunto de datos
   data_20, data_80 = utils.split_20_80(data)
-  PC_training_data, PC_validation_data, PC_attributes = construct_validation_and_training_data(data_20, 
-                                                        data_80, categorical_atts, categorical_atts_indexes, 
-                                                        non_categorical_atts, non_categorical_atts_indexes, 1, 99)
 
-                                  # (data_20, data_80, PCA_cant_vectors, PCA_percentage, k, weight, normalize, use_standarization):
-  validation_len_KNN, cant_errors_KNN, errors_media_KNN = KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, 3, True, True, True)
+  # Se arman los training y validation set 
+  training_data, training_target_attributes = extract_target_attributes(data_80)
+
+  numeric_training_set = one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+
+  validation_data, validation_target_attributes = extract_target_attributes(data_20)
+  numeric_validation_set = one_hot_encoding(validation_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+
+  numeric_attributes = list(numeric_training_set[0].keys())
+  numeric_atts_len = len(numeric_attributes)
+  print('cantidad de nuevos atributos', numeric_atts_len)
+  
+
+
+  #######################################################################################
+  ###########################             PCA            ################################
+  #######################################################################################
+  PC_training_data, PC_validation_data, PC_attributes = PCA_validation_and_training_data(copy.deepcopy(numeric_training_set), copy.deepcopy(numeric_validation_set), 
+                                                        copy.deepcopy(training_target_attributes), copy.deepcopy(validation_target_attributes), 
+                                                        numeric_attributes, target_attr, i+1, 95)
+
+                                                                              # (data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
+  errors_KNN = KNN.holdout_validation(PC_training_data, PC_validation_data, target_attr, PC_attributes, 3, True, True, True)
   print()
-  print('cantidad de errores KNN:',cant_errors_KNN)
+  print('cantidad de errores KNN/PCA:',errors_KNN)
 
   nb_classifier = NaiveBayes(PC_training_data, PC_attributes, target_attr)
-  validation_len_NB, cant_errors_NB, errors_media_NB = nb_classifier.holdout_validation(PC_validation_data, target_attr)
-  print('cantidad de errores NB:',cant_errors_NB)
+  errors_NB = nb_classifier.holdout_validation(PC_validation_data, target_attr)
+  print('cantidad de errores NB/PCA:',errors_NB)
 
 
+  #######################################################################################
+  ###########################             CHI2           ################################
+  #######################################################################################
 
-  # atts = ['x', 'y']
+  training_set_array = []
+  for x in copy.deepcopy(numeric_training_set):
+    training_set_array.append(list(x.values()))
+  
+  chi2_results = chi2(training_set_array, training_target_attributes)
+  chi2_result_list = chi2_results[0].tolist()
 
-  # # data_set = [{'x': 2.5, 'y': 2.4, 'z': 2.1},
-  # #      {'x': 0.5, 'y': 0.7, 'z': 0.9},
-  # #      {'x': 2.2, 'y': 2.9, 'z': 2.5},
-  # #      {'x': 1.9, 'y': 2.2, 'z': 1.7},
-  # #      {'x': 3.1, 'y': 3.0, 'z': 3.5},
-  # #      {'x': 2.3, 'y': 2.7, 'z': 2.2},
-  # #      {'x': 2.0, 'y': 1.6, 'z': 1.9},
-  # #      {'x': 1.0, 'y': 1.1, 'z': 1.0},
-  # #      {'x': 1.5, 'y': 1.6, 'z': 0.8},
-  # #      {'x': 1.1, 'y': 0.9, 'z': 0.9}]
+  max_indexes = get_n_max_indexes(chi2_result_list, i+1)
+  max_attributes = []
+  for j in max_indexes:
+    max_attributes.append(numeric_attributes[j])
 
-  # # atts = ['x', 'y', 'z']
+  chi_training_set = format_data_chi(max_attributes, copy.deepcopy(numeric_training_set))
+  chi_attributes = list(chi_training_set[0].keys())
 
-  # PCA(data_set, atts, atts, 2, None)
- 
+  insert_target_attributes(chi_training_set, target_attr, training_target_attributes)
+
+  chi_validation_set = format_data_chi(max_attributes, copy.deepcopy(numeric_validation_set))
+  insert_target_attributes(chi_validation_set, target_attr, validation_target_attributes)
+
+  chi_errors_KNN = KNN.holdout_validation(chi_training_set, chi_validation_set, 
+                                          target_attr, chi_attributes, 3, True, True, True)
+  print()
+  print('cantidad de errores KNN/CHI2:',chi_errors_KNN)
+
+  nb_classifier = NaiveBayes(chi_training_set, chi_attributes, target_attr)
+  chi_errors_NB = nb_classifier.holdout_validation(chi_validation_set, target_attr)
+  print('cantidad de errores NB/CHI2:',chi_errors_NB)
