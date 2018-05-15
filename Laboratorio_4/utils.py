@@ -145,8 +145,16 @@ def set_numeric_attribute_values(data, numeric_attr, threshold):
 
     return data
 
-def normal_probability(value, media , variance):
+def normal_probability(value: object, media: object, variance: object) -> object:
     return (1 / variance*math.sqrt(2*math.pi))*math.e**((-((value-media)**2))/(2*(variance**2)))
+
+def normal_probability2( value, media , variance):
+    numerador = 1
+    divisor = math.sqrt(variance*math.pi*2)
+    numeradorExp = -((value-media)**2)
+    denominadorExp = 2*variance
+    return (numerador / divisor)*(math.e**(numeradorExp/denominadorExp))
+
 
 def preprocess_tweets(tweet):
     tweet = tweet.strip(" \t\n\r")

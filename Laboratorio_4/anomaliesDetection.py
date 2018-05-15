@@ -1,78 +1,77 @@
 import math
 import numpy as np
+import utils
 import scipy.stats as st
-import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-# from sklearn.cross_validation import train_test_split
-from sklearn.naive_bayes import MultinomialNB
 
 class AnomaliesDetection:
-    def __init__(self, name):
+    def __init__(self, data):
 
-        # self.values_frecuency = {0:[], 1:[], 2:[]}
-        # for line in open(name):
-        #     fields = line.split('|')
-        #     for i in range(3):
-        #         self.values_frecuency[i].append(fields[i])
+        self.meansThird = []
+        self.variancesThird = []
+        self.countVectorizer = CountVectorizer(stop_words='english', min_df=300, preprocessor=utils.preprocess_tweets)
 
-        df=pd.read_csv(name,sep='|',names=['Id','Date','Message'])
+        self.matrix = self.countVectorizer.fit_transform(data).toarray()
 
-        #tweet es la columna de mensajes
-        tweet = df['Message']
+        # Calculamos media y varianza de cada feature
+        self.means = []
+        self.variances = []
 
-        #inicializo el CountVectorize quitando las stopword
-        # cv = CountVectorizer(stop_words='english')
-
-        #creo matriz de palabras y tweets
-        # x_traincvMatrix = cv.fit_transform(tweet)
-
-        # print(x_traincvMatrix.toarray()[0])
-        # print(2)
-
-        # cv.inverse_transform(x_traincvMatrix.toarray()[0])
-        # print(3)
-        #
-        # print(tweet.iloc[0])
-        # print(4)
-
-        # print(x_traincvMatrix.toarray()[0])
-        # cv = TfidfVectorizer(min_df=1, stop_words='english')
+        for column in range(self.matrix.shape[1]):
+            self.means.append(np.mean(self.matrix[:,column]))
+            self.variances.append(np.var(self.matrix[:,column]))
 
 
-        #defino df['largo'] como el largo de los mensajes
-        # df['largo'] = df['Message'].apply(len)
 
-        #imprime caracteristicas
-        # print(df['largo'].describe())
+    def firstMethod(self, data, tweet):
 
-        #obtiene los de largo 58
-        # print(df[df['largo'] == 58]['Message'].iloc[0])
+        instance = self.countVectorizer.transform([tweet]).toarray()
+
+        prob= 1
+        for column in range(self.matrix.shape[1]):
+            dist = st.norm(loc=self.means[column],scale=math.sqrt(self.variances[column]))
+
+            prob *= dist.pdf(      instance[0][column]    )
+
+        return prob
 
 
-        def removeLinks(s):
-            return s.upper()
+    def secondMethod(self, data, tweet):
 
-        cv = CountVectorizer(stop_words='english', preprocessor=removeLinks())
-        matrix = cv.fit_transform(tweet)
-        print(cv.vocabulary_)
-        print("-------")
-        print(matrix.toarray())
-        print(cv.get_feature_names())
-        print("--------")
+        instance = self.countVectorizer.transform([tweet]).toarray()
 
-        print(cv.transform(['Something papel new.']).toarray())
-        print(cv.vocabulary_.get('papel'))
+        prob= 1
+        for column in range(self.matrix.shape[1]):
+            dist = st.norm(loc=self.means[column],scale=math.sqrt(self.variances[column]))
 
-        transformer = TfidfTransformer(smooth_idf=False)
-        tfidf = transformer.fit_transform(matrix.toarray())
-        print( tfidf.toarray() )
-        # mean = 0
-        # std_dev = 1
-        # dist = st.norm(loc=mean,scale=std_dev)
-        # print(matrix[0])
-        # dist.pdf(matrix[0])
+            prob *= (dist.pdf( instance[0][column])  /  dist.pdf(self.means[column]))
 
-def normal_probability(self, value, media , variance):
-        return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
+        return prob
+
+    def thirdMethod(self, data, tweet):
+
+
+        sumWord = 0
+        sumLetter = 0
+        varWord = 0
+        varLetter = 0
+
+        #Se calcula la media
+        for i in range(len(data)):
+            sumWord+= len(utils.preprocess_tweets(data.iloc[i]).split())
+            sumLetter+= len(utils.preprocess_tweets(data.iloc[i]))
+        meanWord= sumWord /len(data)
+        meanLetter= sumLetter /len(data)
+
+        #Se calcula la varianza
+        for o in  range(len(data)):
+            varWord += (len(utils.preprocess_tweets(data.iloc[o]).split())-meanWord)**2
+            varLetter += (len(utils.preprocess_tweets(data.iloc[o]))-meanLetter)**2
+        varWord= (varWord/len(data))
+        varLetter= (varLetter/len(data))
+
+        probWord = utils.normal_probability2(len(tweet.split()), meanWord, math.sqrt(varWord))
+        probLetter = utils.normal_probability2(len(tweet), meanLetter, math.sqrt(varLetter))
+
+        return probWord *probLetter
 
