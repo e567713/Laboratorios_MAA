@@ -56,6 +56,7 @@ times = 1
 #####################################################################
 #         Importación y preprocesamiento de los tweets              #
 #####################################################################
+print()
 print('Leyendo conjunto de tweets...')
 df = pd.concat(
     (pd.read_csv(
@@ -82,21 +83,25 @@ for i,twe in enumerate(data):
 		cant += 1
 print('Se termina de quitar tweets vacíos')
 print('Se quitan:', original_length - len(data), 'tweets, finalizando con un total de: ', len(data)) 
-
+print()
 #####################################################################
 ######################### Ejercicio 1 ###############################
 #####################################################################
-
+print('-----------------------------------------------------------------------')
+print()
+print('Ejercicio 1')
+print()
 print('Entrenando nuestro K-Means...')
 # Nuestra implementación de K-Means.
 kmeans = K_Means(k, max_iter, times)
 kmeans.train(data)
 print('Finaliza entrenamiento')
-
+print()
 print('Entrenando K-Mean de scikitlearn...')
 scikit_kmeans = KMeans(n_clusters=k, random_state=0, max_iter=max_iter, n_init=times).fit(data)
 print('Finaliza entrenamiento')
 
+print()
 print('Evaluando...')
 # Evaluamos.
 rand_score = adjusted_rand_score(list(scikit_kmeans.labels_), kmeans.optimal[1])
