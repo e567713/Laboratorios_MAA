@@ -12,21 +12,13 @@ import copy
 import ejer2
 import KNN
 from sklearn.feature_selection import chi2
-
+import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
-# labels_true = [[0.0, 0.1, 0.2],[0.0, 0.1, 0.2]]
-# labels_pred = [[0.1, 0.1, 0.0],[0.0, 0.1, 0.2]]
-# print(adjusted_rand_score(labels_true, labels_pred))
 #####################################################################
 #                          Constantes                               #
 #####################################################################
-# all_files = ['Health-Tweets/example.txt']
-
-# all_files = ['Health-Tweets/example.txt',
-# 			 'Health-Tweets/otherexample.txt']
-
 
 all_files = ['Health-Tweets/bbchealth.txt',
              'Health-Tweets/cbchealth.txt',
@@ -47,19 +39,19 @@ all_files = ['Health-Tweets/bbchealth.txt',
 
 
 # Constantes para CountVectorizer
-min_df = 1000
+min_df = 500
 
 
 # Constantes para correr K_Means
 
 # Número de clusters.
-k = 10 
+k = 2 
 
 # Máximo de iteraciones en cada corrida del algoritmo (si no se converge antes).
 max_iter = 5 
 
 # Número de inicializaciones distintas a realizar.
-times = 20
+times = 1
 
 #####################################################################
 #         Importación y preprocesamiento de los tweets              #
@@ -81,7 +73,7 @@ cv = CountVectorizer(stop_words='english', min_df=min_df,
 matrix = cv.fit_transform(tweets).toarray()
 
 data = list(matrix)
-original_length = len(data) 
+original_length = len(data)
 print('Quitando tweets vacíos...')
 cant = 0
 for i,twe in enumerate(data):
@@ -95,13 +87,17 @@ print('Se quitan:', original_length - len(data), 'tweets, finalizando con un tot
 ######################### Ejercicio 1 ###############################
 #####################################################################
 
+print('Entrenando nuestro K-Means...')
 # Nuestra implementación de K-Means.
 kmeans = K_Means(k, max_iter, times)
 kmeans.train(data)
+print('Finaliza entrenamiento')
 
-
+print('Entrenando K-Mean de scikitlearn...')
 scikit_kmeans = KMeans(n_clusters=k, random_state=0, max_iter=max_iter, n_init=times).fit(data)
+print('Finaliza entrenamiento')
 
+print('Evaluando...')
 # Evaluamos.
 rand_score = adjusted_rand_score(list(scikit_kmeans.labels_), kmeans.optimal[1])
 print('Rand Score:', rand_score)
