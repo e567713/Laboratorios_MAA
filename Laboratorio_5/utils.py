@@ -8,6 +8,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.feature_selection import chi2
 
+def prueba():
+    print('hola')
 def get_covariance_matrix(data, attributes, atts_len, data_len):
   # Devuelve un np array que representa la matriz de covarianza
   matrix = []
