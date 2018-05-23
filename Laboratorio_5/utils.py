@@ -1,15 +1,143 @@
-
-import re
-from scipy.io import arff
 import numpy as np
-from collections import Counter
+import scipy
 import copy
-import math
+import utils
+from numpy import array
+from numpy import argmax
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.feature_selection import chi2
 
-def read_file(path):
-    return arff.loadarff(path)
+def prueba():
+    print('hola')
+def get_covariance_matrix(data, attributes, atts_len, data_len):
+  # Devuelve un np array que representa la matriz de covarianza
+  matrix = []
+  for k in range(atts_len):
+    row = []
+    for i in range(data_len):
+      for j in range(atts_len):
+        if len(row) < j+1:
+          row.append(data[i][attributes[k]] * data[i][attributes[j]])
+        else:
+          row[j] += data[i][attributes[k]] * data[i][attributes[j]]
+
+    for index in range(len(row)):
+      row[index] /= (data_len - 1)
+    matrix.append(row)
+
+  return np.array(matrix)
 
 
+def transpose_and_format_data(data, atts_len):
+  ret = []
+  for i in range(atts_len): ret.append([])
+  for instance in data:
+    if isinstance(instance, dict): instance = list(instance.values())
+    for i in range(atts_len):
+      ret[i].append(instance[i])
+  return ret
+
+
+def undo_transpose(data):
+  ret = []
+  for i in range(len(data[0])): ret.append([])
+  for i in range(len(ret)):
+    for instance in data:
+      ret[i].append(instance[i])
+  return ret
+
+
+def multiply_matrix(a,b):
+    zip_b = zip(*b)
+    zip_b = list(zip_b)
+    return [[sum(ele_a*ele_b for ele_a, ele_b in zip(row_a, col_b)) 
+             for col_b in zip_b] for row_a in a]
+
+
+def one_hot_encoding(data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes):
+  # Data tiene que venir sin el target attribute 
+  # y como array de arrays, donde cada array es una fila
+  att_values  = {}
+  for x in categorical_atts: att_values[x] = []
+  for instance in data:
+    i = -1
+    for index in categorical_atts_indexes:
+      i += 1
+      att = categorical_atts[i]
+      att_values[att].append([instance[index]])
+
+  onehot_encoded_data = one_hot_encoder(categorical_atts, att_values, non_categorical_atts, non_categorical_atts_indexes, data)
+
+  return onehot_encoded_data
+  
+
+def one_hot_encoder(categorical_atts, att_values, non_categorical_atts, non_categorical_atts_indexes, data):
+  integer_encoded_data = label_encoder(categorical_atts, att_values)
+
+  onehot_encoded_data_dict = {'A1_Score_0': 0.0,'A1_Score_1': 0.0,'A2_Score_0': 0.0,'A2_Score_1': 0.0,'A3_Score_0': 0.0,'A3_Score_1': 0.0,'A4_Score_0': 0.0,'A4_Score_1': 0.0,'A5_Score_0': 0.0,'A5_Score_1': 0.0,'A6_Score_0': 0.0,'A6_Score_1': 0.0,'A7_Score_0': 0.0,'A7_Score_1': 0.0,'A8_Score_0': 0.0,'A8_Score_1': 0.0,'A9_Score_0': 0.0,'A9_Score_1': 0.0,'A10_Score_0': 0.0,'A10_Score_1': 0.0,
+                              'gender_0': 0.0, 'gender_1': 0.0, 'jundice_0': 0.0, 'jundice_1': 0.0, 'austim_0': 0.0, 'austim_1': 0.0, 'used_app_before_0': 0.0, 'used_app_before_1': 0.0, 'age_desc_0': 0.0}
+  onehot_encoded_data = []
+
+  ethnicity_possible_values = ['White-European','Latino','Others','Black','Asian',"'Middle Eastern '",'Pasifika',"'South Asian'",'Hispanic','Turkish','others']
+  for i in range(len(ethnicity_possible_values)): onehot_encoded_data_dict['ethnicity_' + str(i)] = 0.0
+  relation_possible_values = ['Self','Parent',"'Health care professional'",'Relative','Others']
+  for i in range(len(relation_possible_values)): onehot_encoded_data_dict['relation_' + str(i)] = 0.0
+  country_possible_values = ["'United States'","Brazil","Spain","Egypt","'New Zealand'","Bahamas","Burundi","Austria","Argentina","Jordan","Ireland","'United Arab Emirates'","Afghanistan","Lebanon","'United Kingdom'","'South Africa'","Italy","Pakistan","Bangladesh","Chile","France","China","Australia","Canada","'Saudi Arabia'","Netherlands","Romania","Sweden","Tonga","Oman","India","Philippines","'Sri Lanka'","'Sierra Leone'","Ethiopia","'Viet Nam'","Iran","'Costa Rica'","Germany","Mexico","Russia","Armenia","Iceland","Nicaragua","'Hong Kong'","Japan","Ukraine","Kazakhstan","AmericanSamoa","Uruguay","Serbia","Portugal","Malaysia","Ecuador","Niger","Belgium","Bolivia","Aruba","Finland","Turkey","Nepal","Indonesia","Angola","Azerbaijan","Iraq","'Czech Republic'",'Cyprus']
+  for i in range(len(country_possible_values)): onehot_encoded_data_dict['contry_of_res_' + str(i)] = 0.0
+
+  values = list(integer_encoded_data.values())
+  for i in range(len(values[0])):
+    onehot_encoded_data.append(copy.deepcopy(onehot_encoded_data_dict))
+    j = -1
+    for att in non_categorical_atts:
+      j += 1
+      onehot_encoded_data[-1][att] = data[i][non_categorical_atts_indexes[j]]
+
+  for att, values in integer_encoded_data.items():
+    i = -1
+    for value in values:
+      i += 1
+      onehot_encoded_data[i][att + '_' + str(value)] = 1.0
+
+  
+  return onehot_encoded_data
+
+def label_encoder(categorical_atts, att_values):
+  integer_encoded_data = {}
+  for x in categorical_atts: integer_encoded_data[x] = None
+  for att, values in att_values.items():
+    integer_encoded = []
+    for value in values:
+      if (att == 'A1_Score' or att == 'A2_Score' or att == 'A3_Score' or att == 'A4_Score' or att == 'A5_Score' or att == 'A6_Score' or att == 'A7_Score' or att == 'A8_Score' or att == 'A9_Score' or att == 'A10_Score'):
+        int_values = [0,1]
+        possible_values = ['0','1']
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'gender'):
+        int_values = [0,1]
+        possible_values = ['f','m']
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'ethnicity'):
+        int_values = [0,1,2,3,4,5,6,7,8,9,10]
+        possible_values = ['White-European','Latino','Others','Black','Asian',"'Middle Eastern '",'Pasifika',"'South Asian'",'Hispanic','Turkish','others']
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'jundice' or att == 'austim' or att == 'used_app_before'):
+        int_values = [0,1]
+        possible_values = ['no','yes']
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'contry_of_res'):
+        possible_values = ["'United States'","Brazil","Spain","Egypt","'New Zealand'","Bahamas","Burundi","Austria","Argentina","Jordan","Ireland","'United Arab Emirates'","Afghanistan","Lebanon","'United Kingdom'","'South Africa'","Italy","Pakistan","Bangladesh","Chile","France","China","Australia","Canada","'Saudi Arabia'","Netherlands","Romania","Sweden","Tonga","Oman","India","Philippines","'Sri Lanka'","'Sierra Leone'","Ethiopia","'Viet Nam'","Iran","'Costa Rica'","Germany","Mexico","Russia","Armenia","Iceland","Nicaragua","'Hong Kong'","Japan","Ukraine","Kazakhstan","AmericanSamoa","Uruguay","Serbia","Portugal","Malaysia","Ecuador","Niger","Belgium","Bolivia","Aruba","Finland","Turkey","Nepal","Indonesia","Angola","Azerbaijan","Iraq","'Czech Republic'",'Cyprus']
+        int_values = [i for i in range(len(possible_values))]
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'relation'):
+        possible_values = ['Self','Parent',"'Health care professional'",'Relative','Others']
+        int_values = [i for i in range(len(possible_values))]
+        integer_encoded.append(int_values[possible_values.index(value[0])])
+      elif (att == 'age_desc'):
+        integer_encoded.append(0)
+
+      integer_encoded_data[att] = array(integer_encoded)
+  return integer_encoded_data
 
 def decode_data (data):
   # Devuelve un arreglo de arreglos donde cada elemento es una fila
@@ -24,193 +152,18 @@ def decode_data (data):
   return result
 
 
-def process_missing_values(data, attributes, use_most_common):
-    # Procesa el conjunto de datos para atacar el problema de valores incompletos.
+def extract_target_attributes(data):
+  target_attributes = []
+  i = -1
+  for instance in data:
+    i += 1
+    target_attributes.append(instance[-1])
+    data[i].pop()
+  return (data, target_attributes)
 
-    # Guardará los valores más comunes para los atributos que necesiten calcularse.
-    most_common = {}
-    i = len(data)
-
-    # Se itera de atrás para adelante para poder borrar por indice si not use_most_common
-    for instance in reversed(data):
-        i -= 1
-        for attribute in attributes:
-
-            # Si se encuentra un valor faltante.
-            if ((isinstance(instance[attribute], np.float64) and np.isnan(instance[attribute])) or (isinstance(instance[attribute], np.bytes_) and instance[attribute] == b'?')):
-                # Si use_most_common, se cambia el valor faltante por el más común del atributo,
-                # si no, se descarta el ejemplo
-                if use_most_common:
-                    # Si no se ha calculado el valor más común, se lo calcula y almacena.
-                    if not attribute in most_common:
-                        most_common[attribute]=found_most_common_attribute_value(
-                            data, attribute)
-
-                    # Se cambia el valor faltante por el más común.
-                    instance[attribute] = most_common[attribute]
-                else:
-                    # Se descarta el ejemplo
-                    data = np.delete(data,i)
-                    break
-    return data
-
-
-def found_most_common_attribute_value(data, attribute):
-    values = [instance[attribute] for instance in data if not (isinstance(instance[attribute], np.float64) and np.isnan(instance[attribute])) or (isinstance(instance[attribute], np.bytes_) and instance[attribute] == b'?')]
-    data = Counter(values)
-    return max(values, key=data.get)
-
-
-
-def split_20_80(d):
-    # Divide el conjunto de datos en dos subconjuntos, uno con el 80% de los datos
-    # y el otro con el restante 20%.
-
-    # Se copia el conjunto de datos original para no alterarlo.
-    data = copy.deepcopy(d)
-
-    # Se ordenan aleatoriamente los ejemplos del conjunto para simular la
-    # elección al azar de elementos para formar los subconjuntos.
-    np.random.shuffle(data)
-
-    # Se obtiene la cantidad de elementos que suponen el 20% de los datos.
-    limit = len(data) // 5
-
-    # Se crean los subconjuntos
-    subset_20 = data[:limit]
-    subset_80 = data[limit:]
-
-    return (subset_20, subset_80)
-
-def process_numeric_values(data, numeric_attributes, target_attr):
-
-    for numeric_attr in numeric_attributes:
-        # Se calcula el mejor threshold para el atributo numérico numeric_attr
-        # midiendo según la gananacia de información.
-
-        thresholds = []
-
-        # Se ordenan los ejemplos en orden ascendente según los valores de numeric_attr.
-        sorted_data = sorted(data, key=lambda x: x[numeric_attr])
-
-        # Se recorre el conjunto data comparando de a 2 elementos para encontrar posibles
-        # thresholds.
-        for i in range(0, len(sorted_data) - 1):
-            instance_1 = sorted_data[i]
-            instance_2 = sorted_data[i + 1]
-
-            # En caso de encontrar un posible candidato se almacena
-            if instance_1[target_attr] != instance_2[target_attr] and instance_1[numeric_attr] != instance_2[numeric_attr]:
-                thresholds.append(
-                    (instance_1[numeric_attr] + instance_2[numeric_attr]) / 2)
-
-        # Se recorre la lista de posibles thresholds.
-        for threshold in thresholds:
-
-            # Se dividen los valores de numeric_attr según el threshold dado.
-            splitted_data = set_numeric_attribute_values(
-                copy.deepcopy(data), numeric_attr, threshold)
-
-            # Se busca el threshold que maximiza la ganancia de información.
-            maximum_thresholds_tied = []
-            max_ig = -1
-            ig = information_gain(splitted_data, numeric_attr, target_attr, use_missing_values_first_method)
-            if ig > max_ig:
-                max_ig = ig
-                maximum_thresholds_tied = []
-                maximum_thresholds_tied.append(splitted_data)
-            elif ig == max_ig:
-                maximum_thresholds_tied.append(splitted_data)
-
-        best_splitted_data = random.choice(maximum_thresholds_tied)
-
-        # Se setean los valores del conjunto de datos según los resultados obtenidos
-        # por el mejor threshold.
-        for i in range(len(data)):
-            data[i][numeric_attr] = best_splitted_data[i][numeric_attr]
-
-    return data
-        
-def set_numeric_attribute_values(data, numeric_attr, threshold):
-    # Divide los valores del atributo numérico numeric_attr según
-    # el valor del threshold pasado por parámetro.
-
-    new_key = numeric_attr + '>' + str(threshold)
-
-    for instance in data:
-        if instance[numeric_attr] > threshold:
-            instance[numeric_attr] = 1
-        else:
-            instance[numeric_attr] = 0
-
-    return data
-
-def normal_probability(value: object, media: object, variance: object) -> object:
-    return (1 / variance*math.sqrt(2*math.pi))*math.e**((-((value-media)**2))/(2*(variance**2)))
-
-def normal_probability2( value, media , variance):
-    numerador = 1
-    divisor = math.sqrt(variance*math.pi*2)
-    numeradorExp = -((value-media)**2)
-    denominadorExp = 2*variance
-    return (numerador / divisor)*(math.e**(numeradorExp/denominadorExp))
-
-
-def preprocess_tweets(tweet):
-    tweet = tweet.strip(" \t\n\r")
-    tweet = re.sub(r'[\t\n\r]', " ", tweet)
-    tweet = re.sub(r'(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?', " ", tweet)
-    return tweet
-
-
-def scale(data, attributes, use_standarization):
-    # 'data' es es el conjunto de entrenamiento
-    # 'attributes' un array con los nombres de los atributos
-    # si 'use_standarization' = true, normaliza usando media y varianza
-    # si no, usa min-max
-    # Se retorna (data, scalation_params) siendo el último {att: (mean, std)}
-    # en caso de use_stand = true, o {att: (min, max)} en caso de use_stand = false
-    numeric_attributes_values = {}
-    scalation_parameters = {}
-    # Se recorre el data para extraer los valores de los distintos atributos numéricos
-    for instance in data:
-        for attribute in attributes:
-            #  Si se encuentra un valor numérico se agrega al diccionario
-            if isinstance(instance[attribute], np.float64) or isinstance(instance[attribute], float):
-                if attribute in numeric_attributes_values:
-                    numeric_attributes_values[attribute].append(instance[attribute])
-                else:
-                    numeric_attributes_values[attribute] = [instance[attribute]]
-    for att, values in numeric_attributes_values.items():
-        values_np = np.asarray(values)
-        if use_standarization:
-            scaled = (values_np - values_np.mean()) / values_np.std()
-            scalation_parameters[att] = (values_np.mean(), values_np.std())
-            i = -1
-            for instance in data:
-                i += 1
-                instance[att] = scaled[i]
-        else:
-            scaled = (values_np - values_np.min()) / (values_np.max() - values_np.min())
-            scalation_parameters[att] = (values_np.min(), values_np.max())
-            i = -1
-            for instance in data:
-                i += 1
-                instance[att] = scaled[i]
-    return(data, scalation_parameters)
-
-def scale_instance(instance, scalation_parameters, use_standarization):
-    for att, parameters in scalation_parameters.items():
-        mean_or_min = parameters[0]
-        std_or_max = parameters[1]
-        if use_standarization:
-            instance[att] = ((instance[att] - mean_or_min) / std_or_max)
-        else:
-            instance[att] = (instance[att] - mean_or_min) / (std_or_max - mean_or_min)
-    return instance
-
-
-
+def insert_target_attributes(data, target_attr, target_attributes):
+  for i in range(len(data)):
+    data[i][target_attr] = target_attributes[i]
 
 
 def scalarProduct(weight, instance):
