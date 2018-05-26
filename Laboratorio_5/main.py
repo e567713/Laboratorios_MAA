@@ -69,6 +69,7 @@ utils.insert_target_attributes(numeric_data, target_attr, data_target_attributes
 numeric_validation_set, numeric_training_set = utils.split_20_80(numeric_data)
 
 training_set_scaled, scalation_parameters = utils.scale(copy.deepcopy(numeric_training_set), numeric_attributes,False)
+validation_set_scaled, scalation_parameters2 = utils.scale(copy.deepcopy(numeric_validation_set), numeric_attributes,False)
 
 # print()
 # for x in training_data_scale[:3]: print(x)
@@ -76,32 +77,34 @@ training_set_scaled, scalation_parameters = utils.scale(copy.deepcopy(numeric_tr
 numeric_attributes.insert(0,'sesgo')
 
 utils.insert_sesgo_one(training_set_scaled)
-# utils.insert_target_attributes(training_data_scale, target_attr, data_target_attributes)
+utils.insert_sesgo_one(validation_set_scaled)
 
 
 for i in range(len(numeric_attributes)):
     weight += [0.1]
 
 
-# print()
-# print(training_data_Scale[2])
-# print()
-# print()
-# print()
-#
-
-alpha = 50
 
 
-for i in range(1000):
-    print("Peso", i + 1)
-    print(weight)
+alpha = 5
+
+
+for i in range(25):
+    # print("Peso", i + 1)
+    # print(weight)
     print("Costo", i + 1)
     print(utils.costFunction(weight, training_set_scaled, numeric_attributes, target_attr))
     print()
     weight = utils.descentByGradient(weight, training_set_scaled, alpha, numeric_attributes, target_attr)
 
 
+errores = 0
+for instance in validation_set_scaled:
+    result = utils.clssify_LR_instance(instance, weight, numeric_attributes)
+    if (instance[target_attr]!=result):
+        errores += 1
+print("Cantidad de errores registrados:")
+print(errores)
 
 
 # utils.insert_target_attributes(numeric_validation_set, target_attr, validation_target_attributes)

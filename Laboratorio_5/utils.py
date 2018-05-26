@@ -343,15 +343,8 @@ def scalarProductDict(weight, instance, attributesWithSesgo):
 
 def calculateH0(weight, instance, attributesWithSesgo):
     oTx= scalarProductDict(weight, instance, attributesWithSesgo)
-    # print(oTx)
     eExp = (math.e)**(-oTx)
-    # print("oTx")
-    # print(oTx)
-    # print('e^-ProdEscalar')
-    # print(eExp)
     h0 = 1/(1+(eExp))
-    # print('ho')
-    # print(h0)
     return h0
 
 def instanceCost(weight, instance, attributesWithSesgo, target_attr):
@@ -388,3 +381,23 @@ def descentByGradient(weight, data, a, attributesWithSesgo, target_attr):
                 sum += ih0*instance[attributesWithSesgo[j]]
         newWeight[j] = weight[j] - ((a*sum)/dataLenght)
     return newWeight
+
+def clssify_LR_instance(instance, weight, attributesWithSesgo):
+    result = 'YES' if (calculateH0(weight, instance, attributesWithSesgo) > 0.5) else "NO"
+    return result
+
+def holdout_validation(data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
+    # retorna (len(validation_set), cantidad de errores, promedio de errores)
+    errors = 0
+    if normalize:
+        scale_values = utils.scale(data, attributes, use_standarization)
+        data = scale_values[0]
+        scalation_parameters = scale_values[1]
+    for instance in validation_set:
+        instance_copy = copy.deepcopy(instance)
+        if normalize:
+            instance_copy = utils.scale_instance(instance_copy, scalation_parameters, use_standarization)
+        result = classify(instance_copy, data, k, target_attr, weight, attributes)
+        if result != instance[target_attr]:
+            errors += 1
+    return (len(validation_set), errors, errors/len(validation_set))
