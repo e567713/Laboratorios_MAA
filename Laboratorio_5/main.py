@@ -78,19 +78,29 @@ utils.insert_target_attributes(numeric_training_set, target_attr, training_targe
 for i in range(len(numeric_attributes)):
     weight += [0.1]
 
-
+print("Peso 1")
+print(weight)
+print("Costo 1")
 print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
+print()
+
 weight2 = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
-# print(weight)
+print("Peso 2")
+print(weight2)
+print("Costo 2")
+# print(utils.costFunction(weight2, numeric_training_set, numeric_attributes, target_attr))
 print()
 
-print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
-weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
-# print(weight)
-print()
+weight3 = utils.descentByGradient(weight2, numeric_training_set, 1, numeric_attributes, target_attr)
+print("Peso 3")
+print(weight3)
+print("Costo 3")
+# print(utils.costFunction(weight3, numeric_training_set, numeric_attributes, target_attr))
 
-print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
-weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
+# print()
+#
+# print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
+# weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
 # print(weight)
 print()
 

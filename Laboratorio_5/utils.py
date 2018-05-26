@@ -298,7 +298,11 @@ def scalarProductDict(weight, instance, attributesWithSesgo):
     return result
 
 def calculateH0(weight, instance, attributesWithSesgo):
-    eExp = (math.e)**(-scalarProductDict(weight, instance, attributesWithSesgo))
+    oTx= scalarProductDict(weight, instance, attributesWithSesgo)
+    # print(oTx)
+    eExp = (math.e)**(-oTx)
+    # print("oTx")
+    # print(oTx)
     # print('e^-ProdEscalar')
     # print(eExp)
     h0 = 1/(1+(eExp))
@@ -308,17 +312,19 @@ def calculateH0(weight, instance, attributesWithSesgo):
 
 def instanceCost(weight, instance, attributesWithSesgo, target_attr):
     h0 = calculateH0(weight, instance, attributesWithSesgo)
-    # print('logaritmo')
     if (instance[target_attr]== 'YES'):
-        print(h0)
+        # print("Yes")
+        # print(h0)
         # print(-math.log10(h0))
         return -math.log10(h0)
     elif (instance[target_attr]== 'NO'):
+        # print("No")
+        # print(h0)
         # print(-math.log10(1-h0))
         return -math.log10(1-h0)
 
 def costFunction(weight, data, attributesWithSesgo, target_attr):
-    lenght = len(weight)
+    lenght = len(data)
     cost=0
     for instance in data:
         cost += instanceCost(weight,instance,attributesWithSesgo, target_attr)
@@ -331,9 +337,10 @@ def descentByGradient(weight, data, a, attributesWithSesgo, target_attr):
     for j in range(weightLenght):
         sum = 0
         for instance in data:
+            ih0 = calculateH0(weight, instance, attributesWithSesgo)
             if instance[target_attr] == 'YES':
-                sum +=  calculateH0(weight,instance,attributesWithSesgo)-1
+                sum += ih0-1
             else:
-                sum +=  calculateH0(weight,instance,attributesWithSesgo)
+                sum += ih0
         newWeight[j] = weight[j] - ((a*sum)/dataLenght)*instance[attributesWithSesgo[j]]
     return newWeight
