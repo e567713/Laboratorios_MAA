@@ -1,4 +1,5 @@
 import utils
+import copy
 
 examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
@@ -57,63 +58,48 @@ non_categorical_atts_indexes = [10]
 data = utils.process_missing_values(data_set, attributes, True)
 data = utils.decode_data(data)
 
+data_ext, data_target_attributes = utils.extract_target_attributes(data)
+
+numeric_data = utils.one_hot_encoding(data_ext, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+numeric_attributes = list(numeric_data[0].keys())
+
+utils.insert_target_attributes(numeric_data, target_attr, data_target_attributes)
+
 # Se divide el conjunto de datos
-data_20, data_80 = utils.split_20_80(data)
+numeric_validation_set, numeric_training_set = utils.split_20_80(numeric_data)
 
-# Se arman los training y validation set
-training_data, training_target_attributes = utils.extract_target_attributes(data_80)
+training_set_scaled, scalation_parameters = utils.scale(copy.deepcopy(numeric_training_set), numeric_attributes,False)
 
-# training_data = training_data[:3]
+# print()
+# for x in training_data_scale[:3]: print(x)
 
-numeric_training_set = utils.one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
-validation_data, validation_target_attributes = utils.extract_target_attributes(data_20)
-# numeric_validation_set = utils.one_hot_encoding(validation_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
+numeric_attributes.insert(0,'sesgo')
 
-numeric_attributes = ['sesgo']
-numeric_attributes += list(numeric_training_set[0].keys())
+utils.insert_sesgo_one(training_set_scaled)
+# utils.insert_target_attributes(training_data_scale, target_attr, data_target_attributes)
 
-utils.insert_sesgo_one(numeric_training_set)
-utils.insert_target_attributes(numeric_training_set, target_attr, training_target_attributes)
 
 for i in range(len(numeric_attributes)):
     weight += [0.1]
 
 
-training_data_Scale, algo = utils.scale(numeric_training_set, numeric_attributes,False)
-
-print()
-print(training_data_Scale[0])
 # print()
 # print(training_data_Scale[2])
 # print()
 # print()
 # print()
 #
-# print("Peso 1")
-# print(weight)
-# print("Costo 1")
-# print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
-# print()
-#
-# weight2 = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
-# print("Peso 2")
-# print(weight2)
-# print("Costo 2")
-# # print(utils.costFunction(weight2, numeric_training_set, numeric_attributes, target_attr))
-# print()
-#
-# weight3 = utils.descentByGradient(weight2, numeric_training_set, 1, numeric_attributes, target_attr)
-# print("Peso 3")
-# print(weight3)
-# print("Costo 3")
-# # print(utils.costFunction(weight3, numeric_training_set, numeric_attributes, target_attr))
-#
-# # print()
-# #
-# # print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
-# # weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
-# # print(weight)
-# print()
+
+alpha = 50
+
+
+for i in range(1000):
+    print("Peso", i + 1)
+    print(weight)
+    print("Costo", i + 1)
+    print(utils.costFunction(weight, training_set_scaled, numeric_attributes, target_attr))
+    print()
+    weight = utils.descentByGradient(weight, training_set_scaled, alpha, numeric_attributes, target_attr)
 
 
 

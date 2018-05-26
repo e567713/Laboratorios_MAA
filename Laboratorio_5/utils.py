@@ -305,29 +305,30 @@ def scale(data, attributes, use_standarization):
                     numeric_attributes_values[attribute].append(instance[attribute])
                 else:
                     numeric_attributes_values[attribute] = [instance[attribute]]
-    print("//////////////")
-    print(numeric_attributes_values)
-    print("//////////////")
+    # print("//////////////")
+    # print(numeric_attributes_values)
+    # print("//////////////")
     for att, values in numeric_attributes_values.items():
         values_np = np.asarray(values)
         if use_standarization:
-            scaled = (values_np - values_np.mean()) / values_np.std()
-            scalation_parameters[att] = (values_np.mean(), values_np.std())
-            i = -1
-            for instance in data:
-                i += 1
-                instance[att] = scaled[i]
+            print('TODO')
+            return
+            # scaled = (values_np - values_np.mean()) / values_np.std()
+            # scalation_parameters[att] = (values_np.mean(), values_np.std())
+            # i = -1
+            # for instance in data:
+            #     i += 1
+            #     instance[att] = scaled[i]
         else:
-            # print(values_np)
-            # print()
-            scaled = (values_np - values_np.min()) / (values_np.max() - values_np.min())
-            # print(scaled)
-            # print()
-            scalation_parameters[att] = (values_np.min(), values_np.max())
-            i = -1
-            for instance in data:
-                i += 1
-                instance[att] = scaled[i]
+            if (min(values) == max(values)):
+                minmax = [0.0 for values_i in values]
+            else:
+                minmax = [(values_i - min(values)) / (max(values) - min(values)) for values_i in values]
+                scalation_parameters[att] = (min(values), max(values))
+                i = -1
+                for instance in data:
+                    i += 1
+                    instance[att] = minmax[i]
     return(data, scalation_parameters)
 
 def scalarProductDict(weight, instance, attributesWithSesgo):
