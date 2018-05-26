@@ -63,7 +63,7 @@ data_20, data_80 = utils.split_20_80(data)
 # Se arman los training y validation set
 training_data, training_target_attributes = utils.extract_target_attributes(data_80)
 
-
+# training_data = training_data[:3]
 
 numeric_training_set = utils.one_hot_encoding(training_data, categorical_atts, categorical_atts_indexes, non_categorical_atts, non_categorical_atts_indexes)
 validation_data, validation_target_attributes = utils.extract_target_attributes(data_20)
@@ -78,31 +78,42 @@ utils.insert_target_attributes(numeric_training_set, target_attr, training_targe
 for i in range(len(numeric_attributes)):
     weight += [0.1]
 
-print("Peso 1")
-print(weight)
-print("Costo 1")
-print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
+
+training_data_Scale, algo = utils.scale(numeric_training_set, numeric_attributes,False)
+
 print()
-
-weight2 = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
-print("Peso 2")
-print(weight2)
-print("Costo 2")
-# print(utils.costFunction(weight2, numeric_training_set, numeric_attributes, target_attr))
-print()
-
-weight3 = utils.descentByGradient(weight2, numeric_training_set, 1, numeric_attributes, target_attr)
-print("Peso 3")
-print(weight3)
-print("Costo 3")
-# print(utils.costFunction(weight3, numeric_training_set, numeric_attributes, target_attr))
-
+print(training_data_Scale[0])
+# print()
+# print(training_data_Scale[2])
+# print()
+# print()
 # print()
 #
-# print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
-# weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
+# print("Peso 1")
 # print(weight)
-print()
+# print("Costo 1")
+# print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
+# print()
+#
+# weight2 = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
+# print("Peso 2")
+# print(weight2)
+# print("Costo 2")
+# # print(utils.costFunction(weight2, numeric_training_set, numeric_attributes, target_attr))
+# print()
+#
+# weight3 = utils.descentByGradient(weight2, numeric_training_set, 1, numeric_attributes, target_attr)
+# print("Peso 3")
+# print(weight3)
+# print("Costo 3")
+# # print(utils.costFunction(weight3, numeric_training_set, numeric_attributes, target_attr))
+#
+# # print()
+# #
+# # print(utils.costFunction(weight, numeric_training_set, numeric_attributes, target_attr))
+# # weight = utils.descentByGradient(weight, numeric_training_set, 1, numeric_attributes, target_attr)
+# # print(weight)
+# print()
 
 
 
