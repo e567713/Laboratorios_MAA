@@ -78,7 +78,10 @@ class NaiveBayes:
         return reduce(lambda max_value, value: max_value if result[max_value]>result[value] else value, result.keys())
 
     def normal_probability(self, value, media , variance):
-        return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
+        if (variance == 0):
+            return 1
+        else:
+            return (1 / math.sqrt(2*math.pi*variance))*math.e**((-((value-media)**2))/(2*variance))
 
     def holdout_validation(self, validation_set, target_attr):
         # retorna (len(validation_set), cantidad de errores, promedio de errores)

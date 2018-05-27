@@ -129,6 +129,7 @@ print('cantidad de errores KNN:',errors_KNN[1])
 # se rompe con el scaled, habría que usar la normalizacion de naive bayes?
 
 nb_classifier = NaiveBayes(copy.deepcopy(training_set_scaled), numeric_attributes, target_attr)
+# print(nb_classifier.attributes_values)
 errors_NB = nb_classifier.holdout_validation(copy.deepcopy(validation_set_scaled), target_attr)
 print('cantidad de errores NB:',errors_NB[1])
 
