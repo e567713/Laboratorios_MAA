@@ -9,10 +9,7 @@ from scipy.io import arff
 import utils
 from numpy import array
 import math
-from numpy import argmax
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.feature_selection import chi2
+import KNN
 
 def read_file(path):
     return arff.loadarff(path)
@@ -132,51 +129,6 @@ def one_hot_encoding(data, categorical_atts, categorical_atts_indexes, non_categ
     onehot_encoded_data = one_hot_encoder(categorical_atts, att_values, non_categorical_atts, non_categorical_atts_indexes, data)
 
     return onehot_encoded_data
-
-    # ABAJO ES USANDO SKLEARN, PERO NO ME SIRVIO
-    # label_encoder = LabelEncoder()
-    # integer_encoded_data = {}
-    # for x in categorical_atts: integer_encoded_data[x] = None
-    # for att, values in att_values.items():
-    #   integer_encoded = label_encoder.fit_transform(values)
-    #   integer_encoded_data[att] = integer_encoded
-
-    # integer encode
-    # integer_encoded_data = label_encoder(categorical_atts, att_values)
-    # print(integer_encoded_data)
-
-
-    # binary encode
-    # onehot_encoder = OneHotEncoder(sparse=False)
-    # onehot_encoded_data = {}
-    # for x in categorical_atts: onehot_encoded_data[x] = None
-    # for att, integer_encoded in integer_encoded_data.items():
-    #   integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-    #   onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
-    #   onehot_encoded_data[att] = onehot_encoded.tolist()
-
-
-    # for x in onehot_encoded_data: print(); print(x)
-
-    # new_data = []
-    # attributes_dict = {}
-    # for att in non_categorical_atts:
-    #   attributes_dict[att] = None
-    # for att, encoded in onehot_encoded_data.items():
-    #   for i in range(len(encoded[0])):
-    #     attributes_dict[att + '_' + str(i)] = None
-
-    # i = -1
-    # for instance in data:
-    #   i += 1
-    #   new_data.append(copy.deepcopy(attributes_dict))
-    #   att_index = -1
-    #   for att in non_categorical_atts:
-    #     att_index += 1
-    #     new_data[-1][att] = instance[non_categorical_atts_indexes[att_index]]
-    #   for att, encoded in onehot_encoded_data.items():
-    #     for j in range(len(encoded[i])):
-    #       new_data[-1][att + '_' + str(j)] = encoded[i][j]
 
 
 
@@ -386,18 +338,32 @@ def clssify_LR_instance(instance, weight, attributesWithSesgo):
     result = 'YES' if (calculateH0(weight, instance, attributesWithSesgo) > 0.5) else "NO"
     return result
 
-def holdout_validation(data, validation_set, target_attr, attributes, k, weight, normalize, use_standarization):
+def KNN_holdout_validation(data, validation_set, target_attr, attributes, k, weight):
     # retorna (len(validation_set), cantidad de errores, promedio de errores)
     errors = 0
-    if normalize:
-        scale_values = utils.scale(data, attributes, use_standarization)
-        data = scale_values[0]
-        scalation_parameters = scale_values[1]
     for instance in validation_set:
         instance_copy = copy.deepcopy(instance)
-        if normalize:
-            instance_copy = utils.scale_instance(instance_copy, scalation_parameters, use_standarization)
-        result = classify(instance_copy, data, k, target_attr, weight, attributes)
+        result = KNN.classify(instance_copy, data, k, target_attr, weight, attributes)
         if result != instance[target_attr]:
             errors += 1
     return (len(validation_set), errors, errors/len(validation_set))
+
+
+def scale_instance(instance, scalation_parameters, use_standarization):
+    for att, parameters in scalation_parameters.items():
+        mean_or_min = parameters[0]
+        std_or_max = parameters[1]
+        if use_standarization:
+            instance[att] = ((instance[att] - mean_or_min) / std_or_max)
+        else:
+            instance[att] = (instance[att] - mean_or_min) / (std_or_max - mean_or_min)
+    return instance
+
+
+def LR_holdout_validation(validation_set, target_attr, weight, LR_numeric_attributes):
+    errors = 0
+    for instance in validation_set:
+        result = clssify_LR_instance(instance, weight, LR_numeric_attributes)
+        if (instance[target_attr]!=result):
+            errors += 1
+    return errors
