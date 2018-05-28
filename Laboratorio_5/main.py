@@ -1,9 +1,10 @@
 import sys
-
+from tabulate import tabulate
 import utils
 import copy
 from naive_bayes import NaiveBayes
 import id3
+
 
 examples = utils.read_file('Autism-Adult-Data.arff')
 data_set = examples[0]  # Datos
@@ -104,7 +105,9 @@ LR_numeric_attributes.insert(0,'sesgo')
 LR_training_set_scaled = copy.deepcopy(training_set_scaled)
 utils.insert_sesgo_one(LR_training_set_scaled)
 
-
+print("Se realizan pruebas para obtiener los parametros con mejores resultados:")
+tablaParametros = []
+tablaParametros.append(["Weight", "Alpha", "Costo obtenido"])
 minCost = float('inf')
 for w in range(4):
     for a in range(4):
@@ -116,18 +119,22 @@ for w in range(4):
         # Constante alpha de LR
         alpha = posiblesAlpha[a]
 
-        for i in range(10):
+        for i in range(4):
             # Se ajusta Weight con decenso por gradiente 10 veces
             weight = utils.descentByGradient(weight, LR_training_set_scaled, alpha, LR_numeric_attributes, target_attr)
 
         cost = utils.costFunction(weight, LR_training_set_scaled, LR_numeric_attributes, target_attr)
+        tablaParametros.append([posiblesWeight[w], alpha, cost])
 
         if (minCost > cost):
             minCost = cost
             bestChoose = [posiblesWeight[w], posiblesAlpha[a], cost]
 
-print("El menor costo conseguido fue: ", bestChoose[2], " con Weight = ", bestChoose[0], " y alpha = ", bestChoose[1])
 
+print(tabulate(tablaParametros, headers='firstrow', tablefmt='fancy_grid', stralign='right', showindex=True))
+print("El menor costo conseguido fue: ", bestChoose[2], " con Weight = ", bestChoose[0], " y alpha = ", bestChoose[1])
+print("A continuación se utilizarán los parametros obtenidos.")
+print()
 
 #######################################################################################
 ################       Se calculan los errores para los            ####################
@@ -138,8 +145,17 @@ errors_LR_total = 0
 errors_KNN_total = 0
 errors_NB_total = 0
 errors_ID3_total = 0
+tablaIteraciones = []
+tablaErroresIteraciones = []
 
-for iter in range(10):
+tablaIteraciones.append(['','',"Iter 1","Iter 2","Iter 3","Iter 4","Iter 5","Iter 6","Iter 7","Iter 8"])
+tablaErroresIteraciones.append(['','',"Iter 1","Iter 2","Iter 3","Iter 4","Iter 5","Iter 6","Iter 7","Iter 8","Promedio"])
+
+for iter in range(8):
+    print('Realizando iteración ',iter +1, '...')
+    #######################################################################################
+    #######################       Regresión Logica           ##############################
+    #######################################################################################
     # Se divide el conjunto de datos
     numeric_validation_set, numeric_training_set = utils.split_20_80(numeric_data)
 
@@ -176,14 +192,18 @@ for iter in range(10):
     # Costo anterior
     cost = float('inf')
 
-    # La condición de parado son 100 iteraciones o una
+    # La condición de parado son 15 iteraciones o una
     # diferencia de costos menor a 0.0001
-    for i in range(100):
+    for i in range(15):
         newCost = utils.costFunction(weight, LR_training_set_scaled, LR_numeric_attributes, target_attr)
         dif =abs(cost - newCost)
-        if (iter == 5):
-            print("Costo ", i + 1, " en la quinta iteración")
-            print(newCost)
+
+        if (iter == 0):
+            row = 'Ajuste ' + repr(i)
+            tablaIteraciones.append([row])
+
+        tablaIteraciones[i+1].append(newCost)
+
         if (abs(cost - newCost) < 0.0001):
             break
         cost = newCost
@@ -192,31 +212,54 @@ for iter in range(10):
 
     # LR holdout validation
     errors_LR = utils.LR_holdout_validation(LR_validation_set_scaled, target_attr, weight, LR_numeric_attributes)
-    # print("Cantidad de errores registrados LR:", errors_LR)
     errors_LR_total += errors_LR
 
 
+    #######################################################################################
+    #######################               KNN                ##############################
+    #######################################################################################
+
     # KNN holdout validation con k = 3 y usando pesos
     errors_KNN = utils.KNN_holdout_validation(copy.deepcopy(training_set_scaled), copy.deepcopy(validation_set_scaled), target_attr, numeric_attributes, 3, True)
-    # print('cantidad de errores KNN:',errors_KNN[1])
     errors_KNN_total += errors_KNN[1]
 
-    # Para naive bayes hay que ver si pasarle el scaled o no,
-    # se rompe con el scaled, habría que usar la normalizacion de naive bayes?
+
+    #######################################################################################
+    #######################         Naive Bayes              ##############################
+    #######################################################################################
 
     nb_classifier = NaiveBayes(copy.deepcopy(training_set_scaled), numeric_attributes, target_attr)
-    # print(nb_classifier.attributes_values)
     errors_NB = nb_classifier.holdout_validation(copy.deepcopy(validation_set_scaled), target_attr)
-    # print('cantidad de errores NB:',errors_NB[1])
     errors_NB_total += errors_NB[1]
+
+
+    #######################################################################################
+    #######################            ID3                   ##############################
+    #######################################################################################
 
     tree = id3.ID3_algorithm(training_set_scaled, numeric_attributes, target_attr, True, False)
     errors_ID3 = id3.validation(tree, validation_set_scaled, target_attr)
-    # print("cantidad de errores ID3:",errors_ID3)
     errors_ID3_total += errors_ID3
 
-print("Promedio de errores:")
-print("LR: ", errors_LR_total/10)
-print("KNN: ", errors_KNN_total/10)
-print("NB: ", errors_NB_total/10)
-print("ID3: ", errors_ID3_total/10)
+
+    if (iter == 0):
+        tablaErroresIteraciones.append(['Regresión lógica'])
+        tablaErroresIteraciones.append(['KNN'])
+        tablaErroresIteraciones.append(['Naive Bayes'])
+        tablaErroresIteraciones.append(['ID3'])
+
+    tablaErroresIteraciones[1].append(errors_LR)
+    tablaErroresIteraciones[2].append(errors_KNN[1])
+    tablaErroresIteraciones[3].append(errors_NB[1])
+    tablaErroresIteraciones[4].append(errors_ID3)
+
+tablaErroresIteraciones[1].append(errors_LR_total/8)
+tablaErroresIteraciones[2].append(errors_KNN_total/8)
+tablaErroresIteraciones[3].append(errors_NB_total/8)
+tablaErroresIteraciones[4].append(errors_ID3_total/8)
+
+
+
+print(tabulate(tablaIteraciones, headers='firstrow', tablefmt='fancy_grid', stralign='right', showindex=True))
+print()
+print(tabulate(tablaErroresIteraciones, headers='firstrow', tablefmt='fancy_grid', stralign='right', showindex=True))
