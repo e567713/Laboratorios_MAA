@@ -3,6 +3,7 @@ from collections import Counter
 import numpy as np
 import scipy
 import copy
+import sys
 
 from scipy.io import arff
 
@@ -288,9 +289,7 @@ def scalarProductDict(weight, instance, attributesWithSesgo):
     weightIndex=0
     for attr in attributesWithSesgo:
         result += weight[weightIndex]*instance[attr]
-        weightIndex+=1
-    # print("scalar")
-    # print(result)
+        weightIndex += 1
     return result
 
 def calculateH0(weight, instance, attributesWithSesgo):
@@ -302,14 +301,12 @@ def calculateH0(weight, instance, attributesWithSesgo):
 def instanceCost(weight, instance, attributesWithSesgo, target_attr):
     h0 = calculateH0(weight, instance, attributesWithSesgo)
     if (instance[target_attr]== 'YES'):
-        # print("Yes")
-        # print(h0)
-        # print(-math.log10(h0))
+        if ( h0 == 0):
+            return float('inf')
         return -math.log10(h0)
     elif (instance[target_attr]== 'NO'):
-        # print("No")
-        # print(h0)
-        # print(-math.log10(1-h0))
+        if (h0 == 1):
+            return float('inf')
         return -math.log10(1-h0)
 
 def costFunction(weight, data, attributesWithSesgo, target_attr):
