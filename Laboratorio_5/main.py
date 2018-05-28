@@ -168,22 +168,24 @@ for iter in range(10):
     # Weights para LR
     weight = []
     for i in range(len(LR_numeric_attributes)):
-        weight += [bestChose[0]]
+        weight += [bestChoose[0]]
 
     # Constante alpha de LR
-    alpha = bestChose[1]
+    alpha = bestChoose[1]
 
     # Costo anterior
-    cost = sys.maxsize
+    cost = float('inf')
 
+    # La condición de parado son 100 iteraciones o una
+    # diferencia de costos menor a 0.0001
     for i in range(100):
         newCost = utils.costFunction(weight, LR_training_set_scaled, LR_numeric_attributes, target_attr)
         dif =abs(cost - newCost)
+        if (iter == 5):
+            print("Costo ", i + 1, " en la quinta iteración")
+            print(newCost)
         if (abs(cost - newCost) < 0.0001):
             break
-        print("Costo", i + 1)
-        print(newCost)
-        print()
         cost = newCost
         weight = utils.descentByGradient(weight, LR_training_set_scaled, alpha, LR_numeric_attributes, target_attr)
 
