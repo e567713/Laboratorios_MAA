@@ -1,0 +1,9 @@
+El informe de este laboratorio se encuentra divido en dos archivos .ipynb
+Por un lado, la resolución del ejercicio 4 se encuentra en el archivo main.ipynb mientras que
+la resolución del ejercicio 6 se encuentra en el archivo artificial_neural_network.ipynb.
+
+Ambas jupyter notebooks presentan el informe junto con el código que se implementó para resolver
+cada propuesta. 
+
+Adicionalmente se utilizo código auxiliar de otros archivos .py que no se creyó necesario incluir
+en las notebooks.
